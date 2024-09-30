@@ -1,32 +1,36 @@
-const Card = ({ image, name, category, price, description, onEdit, onDelete }) => {
+import React from 'react';
+import PropTypes from 'prop-types';
+
+export default function OrderCard({ className, image, name, category, price, description, children }) {
   return (
-    <div className="bg-white rounded-lg overflow-hidden shadow-lg transition-all hover:shadow-xl">
-      <img 
-        src={image || '/placeholder.svg?height=160&width=320'} 
-        alt={name} 
-        className="w-full h-40 object-cover"
-      />
-      <div className="p-4">
-        <h3 className="font-bold text-xl mb-2">{name}</h3>
-        <p className="text-gray-600 text-sm mb-2">{category}</p>
-        <p className="text-gray-700 text-base mb-4">{description}</p>
-        <p className="text-lg font-semibold mb-4">${price.toFixed(2)}</p>
-        <div className="flex justify-between">
-          <button
-            onClick={onEdit}
-            className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition-colors"
-          >
-            Edit
-          </button>
-          <button
-            onClick={onDelete}
-            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
-          >
-            Delete
-          </button>
+    <div className={`${className} transition-all hover:shadow-xl relative w-full max-w-xs mx-auto bg-white shadow-lg rounded-lg overflow-hidden flex flex-col min-w-[250px]`}> {/* Adjusted min-width */}
+      {/* Image */}
+      <img src={image || '../assets/bg-img.jpg'} alt={name || 'Default Name'} className="w-full h-40 object-cover" />
+      {/* Card Content */}
+      <div className="p-4 flex flex-col gap-2">
+        {/* Name */}
+        <h1 className="text-xl sm:text-2xl font-bold">{name || 'Default Name'}</h1>
+        {/* Category */}
+        <h2 className="text-lg sm:text-xl text-gray-600">{category || 'Default Category'}</h2>
+        {/* Description */}
+        <p className="text-base sm:text-lg text-gray-800">{description || 'Default Description'}</p>
+        {/* Price */}
+        <p className="text-xl sm:text-2xl font-semibold">{price || '$0.00'}</p>
+        {/* Action Buttons */}
+        <div className="flex flex-col gap-2">
+          {children}
         </div>
       </div>
     </div>
   );
+}
+
+OrderCard.propTypes = {
+  className: PropTypes.string,
+  image: PropTypes.string,
+  name: PropTypes.string,
+  category: PropTypes.string,
+  price: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  description: PropTypes.string,
+  children: PropTypes.node,
 };
-export default Card;

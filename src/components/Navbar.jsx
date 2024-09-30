@@ -10,7 +10,7 @@ const Navbar = ({ children }) => {
 
   return (
     <>
-      <div className="relative top-0 left-0 z-50 flex items-center p-4 bg-black text-white w-full md:hidden">
+      <div className="relative top-0 left-0 z-50 flex items-center p-4 bg-black text-white lg:w-full md:hidden">
         <button onClick={ToggleBtn} className="text-white text-2xl">
           {toggle ? <FaTimes /> : <FaBars />}
         </button>

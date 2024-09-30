@@ -41,7 +41,7 @@ const MenuSchema = new mongoose.Schema({
         required: true
     }
 });
-const MenuModel = mongoose.model("menu", MenuSchema);
+const MenuModel = mongoose.model("menus", MenuSchema);
 
 // Schema for orders
 const OrderSchema = new mongoose.Schema({

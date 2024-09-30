@@ -53,7 +53,7 @@ const Index = () => {
       const matchesCategory = order.fitem && order.fitem !== 'All'
         ? item.category === order.fitem
         : true;
-      const matchesSearch = item.item_name.includes(order.search);
+      const matchesSearch = item.name.includes(order.search);
       return matchesCategory && matchesSearch;
     });
     setFilterMenu(filteredItems);
@@ -113,7 +113,7 @@ const Index = () => {
         ...prevItems,
         {
           category: item.category,
-          name: item.item_name,
+          name: item.name,
           payment_status: 'pending',
           delivery: 'pending',
           item_count: Item_quantity,
@@ -333,7 +333,7 @@ const Index = () => {
             <Card
               key={item.id || index}
               image={item.image}
-              name={item.item_name}
+              name={item.name}
               category={item.category}
               description={item.description}
               price={item.price}
