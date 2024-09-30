@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const { register, handleSubmit } = useForm();
-  const { user,setUser } = useUser();
+  const { setUser } = useUser();
   const [toggle, setToggle] = useState(true);
   const navigate = useNavigate();
 
@@ -18,15 +18,14 @@ const Login = () => {
   const onSubmit = async (data) => {
     try {
       const response = await axios.post("http://localhost:3001/login", data);
-
+  
       if (response.data) {
         setUser(response.data);
         console.log("User:", response.data);
-
-        // Navigate based on user role
-        if (user.role === "admin") {
+        // Navigate based on user role using response.data directly
+        if (response.data.role === "admin") {
           navigate("/admin");
-        } else if (user.role === "employee") {
+        } else if (response.data.role === "employee") {
           navigate("/employee");
         }
       } else {

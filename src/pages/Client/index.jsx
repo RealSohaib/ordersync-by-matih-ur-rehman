@@ -22,7 +22,7 @@ const Index = () => {
 
   useEffect(() => {
     document.title = "Client home screen";  
-    axios.get("http://localhost:3001/menu")
+    axios.get("http://localhost:3001/")
       .then((response) => {
         setMenuContentState(response.data);
         setFilterMenu(response.data); // Set initial filter menu state
@@ -53,7 +53,7 @@ const Index = () => {
       const matchesCategory = order.fitem && order.fitem !== 'All'
         ? item.category === order.fitem
         : true;
-      const matchesSearch = item.item_name.toLowerCase().includes(order.search.toLowerCase());
+      const matchesSearch = item.item_name.includes(order.search);
       return matchesCategory && matchesSearch;
     });
     setFilterMenu(filteredItems);
