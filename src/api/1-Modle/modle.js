@@ -14,8 +14,8 @@ const UserSchema = new mongoose.Schema({
     role: {
         type: String,  // Corrected type
         required: true
-    }
-});
+    },
+},{timestamps:true});
 const UserModel = mongoose.model("user", UserSchema);
 
 // Schema for menu display
@@ -39,6 +39,11 @@ const MenuSchema = new mongoose.Schema({
     description: {
         type: String,  // Corrected type
         required: true
+    },
+    stock: {
+        type: String,  // Corrected type
+        required: true,
+        default:"1"
     }
 });
 const MenuModel = mongoose.model("menus", MenuSchema);

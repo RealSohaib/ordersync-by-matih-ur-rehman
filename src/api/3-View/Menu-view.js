@@ -3,7 +3,7 @@ const { DisplayMenu,
     EditMenu,
      DeleteMenu,
       CreateMenu,
-     DisplayOrderDetails } = require('../2-Controler/Menu-Controler');
+     } = require('../2-Controler/Menu-Controler');
 const multer = require('multer');
 const bodyParser = require('body-parser');
 
@@ -35,16 +35,16 @@ module.exports = function MenuView(app) {
     });
 
     // Route for adding items with file upload
-    app.post("/menu/additems", upload.single('image'), async (req, res) => {
+    app.post("/menu/additems", async (req, res) => {
         try {
             console.log('Request received:', req.body); // Log the request body
             console.log('File received:', req.file); // Log the uploaded file details
 
-            if (!req.file) {
-                return res.status(400).json({ error: 'No file uploaded' });
-            }
+            // if (!req.file) {
+            //     return res.status(400).json({ error: 'No file uploaded' });
+            // }
 
-            req.body.image = req.file.filename; // Save the file name in the image field
+            // req.body.image = req.file.filename; // Save the file name in the image field
             await CreateMenu(req, res);
         } catch (error) {
             console.error('Error in /menu/additems:', error);

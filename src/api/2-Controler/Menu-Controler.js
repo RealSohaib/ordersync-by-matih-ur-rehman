@@ -35,16 +35,22 @@ const DisplayMenu = async function (req, res) {
         res.status(500).send({ message: 'Internal Server Error' });
     }
 };
+        
 const EditMenu = async function (req, res) {
-    const { name, price, image, category, description } = req.body;
+    const { _id, name, price, image, category, description } = req.body;
     try {
-        const data = await MenuModel.findOneAndReplace(
-            { name }, // Find the menu item by name
-            { name, price, image, category, description }, // Replace with new data
-            { new: true }
-        )
-        res.status(200).json(data);
-        console.log(data);
+        const data = await MenuModel.findOneAndUpdate(
+            { _id }, // Find the menu item by _id
+            { name, price, image, category, description }, // Update the fields
+            { new: true } // Return the updated document
+        );
+
+        if (data) {
+            res.status(200).json(data);
+            console.log(data);
+        } else {
+            res.status(404).send({ message: 'Menu item not found' });
+        }
     } catch (err) {
         console.log(err);
         res.status(500).send({ message: 'Internal Server Error' });
@@ -67,21 +73,12 @@ const DeleteMenu = async function (req, res) {
         res.status(500).send({ message: 'Internal Server Error' });
     }
 };
-const DisplayOrderDetails = async function (res) {
-    try {
-        const data = await OrderModel.find();
-        res.status(200).send(data);
-        console.log(data);
-    } catch (err) {
-        console.log(err);
-        res.status(500).send({ message: 'Internal Server Error' });
-    }
-};
+
+
 
 module.exports = {
     CreateMenu,
     DisplayMenu,
     EditMenu,
     DeleteMenu,
-    DisplayOrderDetails
 };

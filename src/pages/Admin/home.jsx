@@ -14,8 +14,9 @@ const Home = () => {
     categoryToggler: false,
   });
   const url = "http://localhost:3001/";
-  const imgPath="../../api/uploads/"
+  const imgPath = "../../api/uploads/";
   const [NewMenu, setNewMenu] = useState({});
+  const [edit, setedit] = useState({});
 
   useEffect(() => {
     fetchData();
@@ -33,8 +34,30 @@ const Home = () => {
   };
 
   const handleEdit = (item) => {
+    setedit(item);
     console.log("Edit item:", item);
     settoggler((prevState) => ({ ...prevState, editItem: true }));
+  };
+
+  useEffect(() => {
+    console.log(edit);
+  }, [edit]);
+
+  const ConfirmEdit = () => {
+    const data = edit;
+    try {
+      axios.put(`http://localhost:3001/menu/edititem`, data)
+        .then(() => {
+          console.log("Edit successful");
+          settoggler((prevState) => ({ ...prevState, editItem: false }));
+          fetchData(); // Refresh the menu data after edit
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    } catch (ex) {
+      console.log(ex);
+    }
   };
 
   const handleDelete = (item) => {
@@ -72,6 +95,8 @@ const Home = () => {
     }
   };
 
+  const categories = [...new Set(menu.map(item => item.category))];
+
   return (
     <div>
       <Layout>
@@ -84,7 +109,7 @@ const Home = () => {
             Add Items
           </button>
         </div>
-
+        {/* adding item option */}
         <div>
           <Modal
             isOpen={toggler.addItem}
@@ -111,8 +136,12 @@ const Home = () => {
                   Add Category
                 </label>
                 <div>
-                  <select name="category" id="category">
-                    <option value="Category">Category</option>
+                  <select>
+                    {categories.map((category, index) => (
+                      <option key={index} value={category}>
+                        {category}
+                      </option>
+                    ))}
                   </select>
                   <button
                     className="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700"
@@ -168,6 +197,7 @@ const Home = () => {
             isOpen={toggler.editItem}
             onClose={() => settoggler((prevState) => ({ ...prevState, editItem: false }))}
             title={"Edit Menu Item"}
+            onClick={ConfirmEdit}
             btnTitle={"Save Changes"}
           >
             <div className="flex flex-col items-start gap-y-3">
@@ -177,6 +207,8 @@ const Home = () => {
               <input
                 id="editName"
                 type="text"
+                value={edit.name}
+                onChange={(e) => setedit({ ...edit, name: e.target.value })}
                 className="w-full p-4 bg-transparent border border-gray-200 rounded-lg outline-none"
                 placeholder="Enter name"
               />
@@ -186,8 +218,14 @@ const Home = () => {
                 Edit Category
               </label>
               <div>
-                <select name="Category" id="editCategory">
-                  <option value="Category">Category</option>
+                <select
+                  onChange={(e) => setedit({ ...edit, category: e.target.value })}
+                >
+                  {categories.map((category, index) => (
+                    <option key={index} value={category}>
+                      {category}
+                    </option>
+                  ))}
                 </select>
                 <button
                   className="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700"
@@ -205,10 +243,25 @@ const Home = () => {
                 <input
                   id="newEditCategory"
                   type="text"
+                  value={edit.category}
+                  onChange={(e) => setedit({ ...edit, category: e.target.value })}
                   className="w-full p-4 bg-transparent border border-gray-200 rounded-lg outline-none"
                   placeholder="Enter new category"
                 />
               ) : null}
+            </div>
+            <div className="flex flex-col items-start gap-y-3">
+              <label htmlFor="editPrice" className="text-sm font-medium cursor-pointer">
+                Edit Available Stock
+              </label>
+              <input
+                id="editPrice"
+                type="number"
+                value={edit.stock}
+                onChange={(e) => setedit({ ...edit, stock: e.target.value })}
+                className="w-full p-4 bg-transparent border border-gray-200 rounded-lg outline-none"
+                placeholder="Enter price"
+              />
             </div>
             <div className="flex flex-col items-start gap-y-3">
               <label htmlFor="editPrice" className="text-sm font-medium cursor-pointer">
@@ -217,6 +270,8 @@ const Home = () => {
               <input
                 id="editPrice"
                 type="text"
+                value={edit.price}
+                onChange={(e) => setedit({ ...edit, price: e.target.value })}
                 className="w-full p-4 bg-transparent border border-gray-200 rounded-lg outline-none"
                 placeholder="Enter price"
               />
@@ -231,28 +286,34 @@ const Home = () => {
               <label htmlFor="editDescription" className="text-sm font-medium cursor-pointer">
                 Edit Description (optional)
               </label>
-              <textarea name="description" id="editDescription" cols={50}></textarea>
+              <textarea
+                name="description"
+                id="editDescription"
+                value={edit.description}
+                onChange={(e) => setedit({ ...edit, description: e.target.value })}
+                cols={50}
+              ></textarea>
             </div>
           </Modal>
 
           {/* Delete Modal */}
           <Modal
-  isOpen={toggler.deleteItem}
-  onClose={() => settoggler((prevState) => ({ ...prevState, deleteItem: false }))}
-  title={"Do you want to delete this item"}
-  btnTitle={"Delete"}
-  onClick={() => confirmDelete(NewMenu)} // Corrected prop name to onConfirm
->
-  <h1>{NewMenu.name}</h1>
-</Modal>
+            isOpen={toggler.deleteItem}
+            onClose={() => settoggler((prevState) => ({ ...prevState, deleteItem: false }))}
+            title={"Do you want to delete this item"}
+            btnTitle={"Delete"}
+            onClick={() => confirmDelete(NewMenu)} // Corrected prop name to onConfirm
+          >
+            <h1>{NewMenu.name}</h1>
+          </Modal>
         </div>
 
-        <div className="mt-6 overflow-y-auto">
+        <div className="mt-6 overflow-x-auto">
           <table className="min-w-full bg-white">
             <thead>
               <tr>
-                <th className="py-2 px-4 border-b">Name</th>
                 <th className="py-2 px-4 border-b">Image</th>
+                <th className="py-2 px-4 border-b">Name</th>
                 <th className="py-2 px-4 border-b">Price</th>
                 <th className="py-2 px-4 border-b">Category</th>
                 <th className="py-2 px-4 border-b">Description</th>
@@ -263,12 +324,12 @@ const Home = () => {
             <tbody>
               {menu.map((item) => (
                 <tr key={item._id}>
+                  <td className="py-2 px-4 border-b"><img src={`${imgPath}${item.image}`} height={10} width={10} alt="" /></td>
                   <td className="py-2 px-4 border-b">{item.name}</td>
-                  <td className="py-2 px-4 border-b">{item.image || "No image"}</td>
                   <td className="py-2 px-4 border-b">${item.price}</td>
                   <td className="py-2 px-4 border-b">{item.category}</td>
                   <td className="py-2 px-4 border-b overflow-hidden">{item.description}</td>
-                  <td className="py-2 px-4 border-b">{item.availableStock || "N/A"}</td>
+                  <td className="py-2 px-4 border-b">{item.stock || "N/A"}</td>
                   <td className="py-2 px-4 border-b">
                     <button
                       className="text-blue-500 hover:text-blue-700 mr-2"

@@ -15,7 +15,7 @@ const Index = () => {
   const [filterMenu, setFilterMenu] = useState([]); // Initialize as an empty array
   const [order, setOrder] = useState({ fitem: '', search: '' });
   const [info, setInfo] = useState({ name: '', contact: '' });
-  const [toggler, setToggler] = useState({ order: false, contact: false  });
+  const [toggler, setToggler] = useState({ order: false, contact: true  });
   const [selectedItems, setSelectedItems] = useState([]);
   const navigate = useNavigate(); // Correct route path
   const { setUser, user } = useUser();
@@ -335,7 +335,7 @@ const Index = () => {
               image={item.image}
               name={item.name}
               category={item.category}
-              description={item.description}
+              description={item.descrption}
               price={item.price}
               className="w-full sm:w-1/2 md:w-1/3 lg:w-1/4 p-2"
             >
