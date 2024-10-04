@@ -74,6 +74,10 @@ const Index = () => {
   };
 
   const contact_popup_Toggler = () => {
+    if(info.name ===""||info.contact==="") {
+      HandleError();
+      return; 
+    }
     setToggler(prevToggler => ({
       ...prevToggler,
       contact: !prevToggler.contact,
@@ -153,7 +157,17 @@ const Index = () => {
       console.log(user)
     }
   };
-
+  const [error,seterror]=useState({
+    number:false,
+    name:false
+  })
+  
+  const HandleError=()=>{
+    seterror({
+      number:true,
+      name:true,
+    })
+  }
   return (
     <div>
       <div className="flex flex-col top-0 m-0 items-center justify-center gap-6 sm:gap-8 ">
@@ -171,9 +185,14 @@ const Index = () => {
               className="w-full p-4 bg-transparent border border-gray-200 rounded-lg outline-none"
               placeholder="Name"
             />
+            {
+              error.name?
             <span className={`text-matte-red animate-pulse font-semibold ${info.name === '' ? 'block' : 'hidden'} `}>
               This field is mandatory
             </span>
+            :null
+            }
+
 
             <label htmlFor="Contact" className="text-md font-bold cursor-pointer">
               Contact
@@ -185,9 +204,13 @@ const Index = () => {
               className="w-full p-4 bg-transparent border border-gray-200 rounded-lg outline-none"
               placeholder="Contact"
             />
-            <span className={`text-matte-red animate-pulse font-semibold ${info.contact === '' ? 'block' : 'hidden'} `}>
+            {
+              error.contact?
+            <span className={`text-matte-red animate-pulse font-semibold ${info.name === '' ? 'block' : 'hidden'} `}>
               This field is mandatory
             </span>
+            :null
+            }
             <div className="my-3 flex items-center w-full justify-between">
               <button
                 onClick={handleInfo}

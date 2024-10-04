@@ -1,4 +1,3 @@
-const bcrypt = require('bcrypt');
 const { UserModel } = require("../1-Modle/modle");
 
 async function CreateUser(req, res) {
@@ -9,10 +8,8 @@ async function CreateUser(req, res) {
         if (userExists) {
             return res.status(409).send({ message: 'User already exists' });
         } else {
-            // Hash the password before saving
-            const hashedPassword = await bcrypt.hash(password, 10);
-            // Create a new user with the hashed password
-            const user = new UserModel({ username, password: hashedPassword, role });
+            // Create a new user with the plain text password
+            const user = new UserModel({ username, password, role });
             const savedUser = await user.save();
             return res.status(201).send(savedUser); // Send the saved user data
         }
@@ -21,6 +18,7 @@ async function CreateUser(req, res) {
         return res.status(500).send({ message: 'Internal Server Error' });
     }
 }
+
 async function Loginuser(req, res) {
     const { username, password, role } = req.body;
 
@@ -29,7 +27,7 @@ async function Loginuser(req, res) {
         const user = await UserModel.findOne({ username, role });
 
         if (user) {
-            // Compare provided password directly with the one stored in the database
+            // Compare provided password with the plain text password stored in the database
             if (password === user.password) {
                 res.status(200).send(user); // If passwords match, send the user data
             } else {
@@ -44,7 +42,6 @@ async function Loginuser(req, res) {
     }
 }
 
-
 async function ChangeCredentials(req, res) {
     const { _id, username, currentPassword, newPassword } = req.body;
     try {
@@ -53,15 +50,11 @@ async function ChangeCredentials(req, res) {
 
         if (user) {
             // Compare provided current password with the one stored in the database
-            const isMatch = await bcrypt.compare(currentPassword, user.password);
-            if (isMatch) {
-                // Hash the new password before saving
-                const hashedPassword = await bcrypt.hash(newPassword, 10);
-
+            if (currentPassword === user.password) {
                 // Update username and password using findOneAndUpdate
                 const updatedUser = await UserModel.findOneAndUpdate(
                     { _id },
-                    { username, password: hashedPassword },
+                    { username, password: newPassword },
                     { new: true } // Return the updated document
                 );
 
@@ -96,14 +89,12 @@ async function DeleteUser(req, res) {
     } catch(err) {
         console.error(err);
         res.status(500).send({ message: 'Internal Server Error' });
-    };
+    }
 }
-
-
 
 module.exports = {
     ChangeCredentials,
     CreateUser,
     Loginuser,
     DeleteUser
-}; 
+};

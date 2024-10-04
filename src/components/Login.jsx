@@ -17,7 +17,7 @@ const Login = () => {
 
   const onSubmit = async (data) => {
     try {
-      const response = await axios.post("http://localhost:3001/login", data);
+      const response = await axios.post("http://localhost:3001/user/login", data);
   
       if (response.data) {
         setUser(response.data);

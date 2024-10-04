@@ -1,41 +1,23 @@
-import WhatsApp from 'whatsapp';
-
-const Whatsapp = ({ senderNumber, recieverNumber, Message }) => {
-  // Initialize WhatsApp SDK with the sender's phone number
-  const wa = new WhatsApp(senderNumber);
-  const sdk_version = wa.version();
-
-  // Enter the recipient phone number
-  const recipient_number = recieverNumber;
-
-  async function send_message() {
-    console.log(sdk_version);
-    try {
-      const sent_text_message = wa.messages.text({ "body": Message }, recipient_number);
-
-      await sent_text_message.then((res) => {
-        console.log(res.rawResponse());
-      });
-    } catch (e) {
-      // Enhanced error handling
-      if (e.response) {
-        // Server responded with a status other than 200 range
-        console.error('Error response from server:', e.response.data);
-      } else if (e.request) {
-        // Request was made but no response was received
-        console.error('No response received:', e.request);
-      } else {
-        // Something else happened while setting up the request
-        console.error('Error setting up request:', e.message);
-      }
-      console.error('Error details:', JSON.stringify(e));
-    }
+class WhatsApp {
+  constructor(senderNumber) {
+    this.senderNumber = senderNumber;
+    // Initialize other properties or methods as needed
   }
 
-  // Call the send_message function to send the message
-  send_message();
+  version() {
+    return '1.0.0'; // Example version
+  }
 
-  return null; // Return null as this component does not render anything
-};
+  messages = {
+    text: async ({ body }, recipientNumber) => {
+      // Simulate sending a text message
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve({ rawResponse: () => `Message sent to ${recipientNumber}: ${body}` });
+        }, 1000);
+      });
+    },
+  };
+}
 
-export default Whatsapp;
+export default WhatsApp;

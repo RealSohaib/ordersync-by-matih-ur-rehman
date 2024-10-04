@@ -1,5 +1,5 @@
 const express = require('express');
-const { Loginuser, ChangePassword,
+const { Loginuser,     ChangeCredentials,
     DeleteUser,CreateUser } = require('../2-Controler/user-controler');
 const cors=require("cors")
 module.exports = function UserView(app) {
@@ -17,7 +17,7 @@ module.exports = function UserView(app) {
 
     // Route for changing password
     app.put("/user/changepassword", (req, res) => {
-        ChangePassword(req, res);
+        ChangeCredentials(req, res);
     });
     app.delete("/user/remove", (req, res) => {
         DeleteUser(req, res);

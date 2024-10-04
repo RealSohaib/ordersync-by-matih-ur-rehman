@@ -3,7 +3,7 @@ import Layout from "./Layout";
 import axios from "axios";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import Modal from "./../../components/Modle";
-
+import SendMessage from "../../components/SendMessage";
 const Home = () => {
   const [menu, setMenu] = useState([]);
   const [toggler, settoggler] = useState({
@@ -108,6 +108,19 @@ const Home = () => {
           >
             Add Items
           </button>
+          <button
+  className="inline-flex items-center justify-center px-8 py-4 font-sans font-semibold tracking-wide text-white bg-matte-red transition-all hover:bg-red-800 rounded-lg h-[60px]"
+  onClick={() => {
+    SendMessage({
+      recieverNumber: "+923487738300",
+      senderNumber: "+933107063543",
+      Message: "this is a text message sent by matih ur rehman"
+    });
+  }}
+>
+  Test try
+  whatsapp
+</button>
         </div>
         {/* adding item option */}
         <div>
