@@ -1,6 +1,8 @@
 import PropTypes from 'prop-types';
 import WhatsApp from './WhatsApp';
-import { ToastContainer } from 'react-toastify';
+
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 const SendMessage = ({ senderNumber, recieverNumber, Message }) => {
   // Initialize WhatsApp SDK with the sender's phone number
   const wa = new WhatsApp(senderNumber);
@@ -16,7 +18,7 @@ const SendMessage = ({ senderNumber, recieverNumber, Message }) => {
 
       await sent_text_message.then((res) => {
         console.log(res.rawResponse());
-
+        toast(res.rawResponse())
       });
     } catch (e) {
       // Enhanced error handling
