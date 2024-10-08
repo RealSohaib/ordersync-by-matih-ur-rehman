@@ -17,7 +17,7 @@ const Index = () => {
   const [info, setInfo] = useState({ name: '', contact: '' });
   const [toggler, setToggler] = useState({ order: false, contact: true  });
   const [selectedItems, setSelectedItems] = useState([]);
-  const [cookies, setCookie] = useCookies(['user']);
+  // const [ setCookie] = useCookies(['order']);
   const navigate = useNavigate(); // Correct route path
   const { setUser, user } = useUser();
   useEffect(() => {
@@ -155,7 +155,7 @@ const Index = () => {
     if (user && user.length > 0) {
       window.location.href = "/resciept";
       console.log(user)
-      setCookie('user',user,'order',selectedItems)
+      // setCookie('user',user,'order',selectedItems)
     }
   };
   const [error,seterror]=useState({
