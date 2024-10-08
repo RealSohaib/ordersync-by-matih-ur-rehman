@@ -4,13 +4,13 @@ import { useState } from "react";
 import { useUser } from "../Contaxt/contaxt";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-
+import { Cookies,useCookies} from "react-cookie";
 const Login = () => {
   const { register, handleSubmit } = useForm();
   const { setUser } = useUser();
   const [toggle, setToggle] = useState(true);
   const navigate = useNavigate();
-
+  const [cookies, setCookie] = useCookies(['user']);
   const Toggle = () => {
     setToggle(!toggle);
   };
@@ -25,8 +25,10 @@ const Login = () => {
         // Navigate based on user role using response.data directly
         if (response.data.role === "admin") {
           navigate("/admin");
+          setCookie('user', response.data, { path: '/' });
         } else if (response.data.role === "employee") {
           navigate("/employee");
+          setCookie('user', response.data, { path: '/' });
         }
       } else {
         console.error("Login failed: No data returned");
