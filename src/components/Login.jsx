@@ -45,10 +45,10 @@ const Login = () => {
 
   return (
     <div className="flex flex-col gap-6 items-center justify-center m-4 sm:m-10">
-      <div className="bg-blue-500 p-8 sm:px-10 sm:py-20 text-center text-white shadow-xl rounded-3xl w-full max-w-md">
+      <div className="bg-blue-500 p-8 sm:px-10 sm:py-20 text-center  shadow-xl rounded-3xl w-full max-w-md">
         <h1 className="font-bold text-2xl capitalize mb-8">Login Form</h1>
         <form
-          className="bg-blue-400 p-6 border-2 rounded-lg transition-all hover:shadow-2xl"
+          className="bg-white text-black p-6 border-2 rounded-lg transition-all hover:shadow-2xl"
           onSubmit={handleSubmit(onSubmit)}
           method="POST"
         >
@@ -61,7 +61,7 @@ const Login = () => {
               type="text"
               name="username"
               placeholder="Enter your username"
-              className="w-full border border-slate-200 text-white placeholder-white rounded-lg py-3 px-5 outline-none bg-transparent focus:shadow-xl focus:outline-dashed"
+              className="w-full border border-slate-200  placeholder-white rounded-lg py-3 px-5 outline-none bg-transparent focus:shadow-xl focus:outline-dashed"
               {...register("username", { required: "Username is required" })}
             />
           </div>
@@ -75,12 +75,12 @@ const Login = () => {
                 type={toggle ? "password" : "text"}
                 name="password"
                 placeholder="Enter your password"
-                className="w-full border border-slate-200 text-white placeholder-white rounded-lg py-3 px-5 outline-none bg-transparent transition-all focus:shadow-xl focus:outline-double"
+                className="w-full border border-slate-200  placeholder-white rounded-lg py-3 px-5 outline-none bg-transparent transition-all focus:shadow-xl focus:outline-double"
                 {...register("password", { required: "Password is required" })}
               />
               <button
                 type="button"
-                className="absolute right-3 top-3 text-white"
+                className="absolute right-3 top-3 "
                 onClick={Toggle}
               >
                 {toggle ? <FaEye /> : <FaEyeSlash />}
@@ -94,7 +94,7 @@ const Login = () => {
             <select
               id="role"
               name="role"
-              className="w-full border border-slate-200 hover:text-black text-white bg-blue-500 rounded-lg py-3 px-5 outline-none hover:bg-blue-500 transition-all focus:shadow-xl focus:outline-dashed"
+              className="w-full border border-slate-200 hover:text-white  bg-blue-500 rounded-lg py-3 px-5 outline-none hover:bg-blue-500 transition-all focus:shadow-xl focus:outline-dashed"
               {...register("role", { required: "Role is required" })}
             >
               <option value="admin">Admin</option>
@@ -104,14 +104,14 @@ const Login = () => {
           <div className="flex items-center justify-between gap-4 mt-6">
             <button
               type="button"
-              className="flex-1 px-4 py-3 font-bold tracking-wide text-white bg-gray-500 rounded-lg transition-all hover:bg-gray-700"
+              className="flex-1 px-4 py-3 font-bold tracking-wide text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition-all"
               onClick={handleLogout}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-3 font-semibold tracking-wide text-white bg-blue-500 rounded-lg transition-all hover:bg-blue-700"
+              className="flex-1 px-4 text-white py-3 font-semibold tracking-wide  bg-blue-500 rounded-lg  hover:bg-blue-700 transition-all"
             >
               Login
             </button>
