@@ -9,7 +9,7 @@ import Minus from '../../assets/Symbols/Minus';
 import Plus from '../../assets/Symbols/Plus';
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-
+import { Cookies } from "react-cookie";
 const Index = () => {
   const [menuContentState, setMenuContentState] = useState([]); // Initialize as an empty array
   const [filterMenu, setFilterMenu] = useState([]); // Initialize as an empty array
@@ -17,9 +17,9 @@ const Index = () => {
   const [info, setInfo] = useState({ name: '', contact: '' });
   const [toggler, setToggler] = useState({ order: false, contact: true  });
   const [selectedItems, setSelectedItems] = useState([]);
+  const [cookies, setCookie] = useCookies(['user']);
   const navigate = useNavigate(); // Correct route path
   const { setUser, user } = useUser();
-
   useEffect(() => {
     document.title = "Client home screen";  
     axios.get("http://localhost:3001/")
@@ -155,6 +155,7 @@ const Index = () => {
     if (user && user.length > 0) {
       window.location.href = "/resciept";
       console.log(user)
+      setCookie('user',user,'order',selectedItems)
     }
   };
   const [error,seterror]=useState({
