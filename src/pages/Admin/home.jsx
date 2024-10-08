@@ -3,8 +3,13 @@ import Layout from "./Layout";
 import axios from "axios";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import Modal from "./../../components/Modle";
-import SendMessage from "../../components/SendMessage";
+import { toast } from "react-toastify";
+import Cookies from 'js-cookie';
+import {Avatar} from "@mui/material"
+import { useNavigate } from 'react-router-dom';
+
 const Home = () => {
+  const navigate=useNavigate()
   const [menu, setMenu] = useState([]);
   const [toggler, settoggler] = useState({
     addItem: false,
@@ -17,11 +22,17 @@ const Home = () => {
   const imgPath = "../../api/uploads/";
   const [NewMenu, setNewMenu] = useState({});
   const [edit, setedit] = useState({});
-
+  const SetCookies=()=>{
+    axios.get(`${url}/prefernces`)
+     .then((response) => {
+        if(response.data.length>0){
+          Cookies.set('prefernces', JSON.stringify(response.data), { expires: 1 });
+        }
+      })
+  }
   useEffect(() => {
     fetchData();
   }, []);
-
   const fetchData = () => {
     axios
       .get(`${url}`)
@@ -36,13 +47,17 @@ const Home = () => {
   const handleEdit = (item) => {
     setedit(item);
     console.log("Edit item:", item);
+
     settoggler((prevState) => ({ ...prevState, editItem: true }));
   };
 
   useEffect(() => {
     console.log(edit);
   }, [edit]);
-
+  const removeCookies = () => {
+    cookies.remove('user');
+    navigate("/login");
+};
   const ConfirmEdit = () => {
     const data = edit;
     try {
@@ -51,6 +66,7 @@ const Home = () => {
           console.log("Edit successful");
           settoggler((prevState) => ({ ...prevState, editItem: false }));
           fetchData(); // Refresh the menu data after edit
+          toast("Succefuly item Edited")
         })
         .catch((err) => {
           console.log(err);
@@ -72,6 +88,8 @@ const Home = () => {
         fetchData(); // Refresh the menu data after deletion
         console.log(menu);
         settoggler((prevState) => ({ ...prevState, deleteItem: false }));
+      
+        toast("Succefuly item deleted",response)
       })
       .catch((err) => {
         console.log(err);
@@ -102,26 +120,37 @@ const Home = () => {
       <Layout>
         <div className="w-full flex justify-between rounded-xl items-center py-3 px-3 shadow-lg bg-white">
           <h1 className="font-bold text-4xl">Dashboard</h1>
-          <button
+          
+<button
+                        className="inline-flex items-center justify-center px-8 py-4 font-sans font-semibold tracking-wide text-white bg-matte-red transition-all hover:bg-red-800 rounded-lg h-[60px]"
+                        onClick={removeCookies}
+                    >
+                        Logout
+                    </button>
+                            </div>
+
+        <div className=" my-1 rounded-md backdrop-blur-md
+         border-1 py-3   flex items-center justify-center
+          gap-3 container">
+         <div>
+          <input
+            type="text"
+            placeholder="Enter your content"
+            className="bg-white w-[300px] border border-slate-200 rounded-lg py-3 px-5 outline-none  bg-transparent"
+            /><button
             className="inline-flex items-center justify-center px-8 py-4 font-sans font-semibold tracking-wide text-white bg-matte-red transition-all hover:bg-red-800 rounded-lg h-[60px]"
             onClick={() => settoggler((prevState) => ({ ...prevState, addItem: true }))}
-          >
-            Add Items
-          </button>
+            >
+          Search
+        </button>
+            </div>
           <button
-  className="inline-flex items-center justify-center px-8 py-4 font-sans font-semibold tracking-wide text-white bg-matte-red transition-all hover:bg-red-800 rounded-lg h-[60px]"
-  onClick={() => {
-    SendMessage({
-      recieverNumber: "+923487738300",
-      senderNumber: "+933107063543",
-      Message: "this is a text message sent by matih ur rehman"
-    });
-  }}
->
-  Test try
-  whatsapp
-</button>
-        </div>
+            className="inline-flex items-center justify-center px-8 py-4 font-sans font-semibold tracking-wide text-white bg-matte-red transition-all hover:bg-red-800 rounded-lg h-[60px]"
+             onClick={() => settoggler((prevState) => ({ ...prevState, addItem: true }))}
+          >
+            Add Item
+          </button>
+          </div>
         {/* adding item option */}
         <div>
           <Modal
@@ -321,6 +350,30 @@ const Home = () => {
           </Modal>
         </div>
 
+        {/* <div className=" rounded-md backdrop-blur-md 
+        drop-shadow-md flex flex-wrap items-center justify-center 
+        gap-4 text-center
+        overflow-x-auto
+        ">
+          {menu.map((item, index) => (
+            <Card
+              key={item.id || index}
+              image={item.image}
+              name={item.name}
+              category={item.category}
+              description={item.descrption}
+              price={item.price}
+              className="w-full sm:w-1/2 md:w-1/3 lg:w-1/4 p-2"
+            >
+              <button className="inline-flex items-center justify-center px-8 py-4 font-sans font-semibold tracking-wide text-white bg-matte-red rounded-lg h-[60px]" onClick={() => AddToCartHandler(item)}>
+                Add to Cart
+              </button>
+              <button className="inline-flex items-center justify-center px-8 py-4 font-sans font-semibold tracking-wide text-white bg-matte-red rounded-lg h-[60px]" onClick={() => OrderNowHandler(item)}>
+                Order Now
+              </button>
+            </Card>
+          ))}
+        </div> */}
         <div className="mt-6 overflow-x-auto">
           <table className="min-w-full bg-white">
             <thead>
@@ -337,12 +390,17 @@ const Home = () => {
             <tbody>
               {menu.map((item) => (
                 <tr key={item._id}>
-                  <td className="py-2 px-4 border-b"><img src={`${imgPath}${item.image}`} height={10} width={10} alt="" /></td>
-                  <td className="py-2 px-4 border-b">{item.name}</td>
-                  <td className="py-2 px-4 border-b">${item.price}</td>
-                  <td className="py-2 px-4 border-b">{item.category}</td>
+                  <td className="py-2 px-4 border-b"><Avatar alt="Remy Sharp" src={item.image?`${imgPath}+${item.image}`:"../public/vite.svg"} /></td>
+                  <td className="py-2 px-4 border-b item-center justify-center">{item.name}</td>
+                  <td className="py-2 px-4 border-b item-center justify-center">${item.price}</td>
+                  <td className="py-2 px-4 border-b item-center justify-center">{item.category}</td>
                   <td className="py-2 px-4 border-b overflow-hidden">{item.description}</td>
-                  <td className="py-2 px-4 border-b">{item.stock || "N/A"}</td>
+                  <td className="py-2 px-4 border-b">{
+                  item.stock===0?
+                  <span className="text-red-500 font-bold">Out of Stock</span>
+                  :
+                  item.stock
+                  }</td>
                   <td className="py-2 px-4 border-b">
                     <button
                       className="text-blue-500 hover:text-blue-700 mr-2"
@@ -361,6 +419,7 @@ const Home = () => {
               ))}
             </tbody>
           </table>
+
         </div>
       </Layout>
     </div>
