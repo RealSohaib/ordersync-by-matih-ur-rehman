@@ -83,7 +83,7 @@ export const EmployeesNavbar = [
     },
     {
       "label": "Manage Employees",
-      "link": "/Admin/manageemployees",
+      "link": "/manageemployees",
       "icon":FaUsers
     },
     {
@@ -98,7 +98,7 @@ export const EmployeesNavbar = [
     },
     {
       "label": "Manage Profile",
-      "link": "/admin/manageprofile",
+      "link": "/profile",
       "icon":FaUserCircle
     }
   ];
