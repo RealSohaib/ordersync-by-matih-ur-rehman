@@ -1,6 +1,6 @@
 const connection = require("../connection"); // Fix import for connection
 const mongoose = require("mongoose");
-const autoIncrement = require('mongoose-auto-increment');
+// const autoIncrement = require('mongoose-auto-increment');
 
 // Schema for user
 const UserSchema = new mongoose.Schema({
@@ -60,7 +60,7 @@ const MenuSchema = new mongoose.Schema({
     }
 });
 const MenuModel = mongoose.model("menus", MenuSchema);
-autoIncrement.initialize(connection);
+// autoIncrement.initialize(connection);
 // Schema for orders
 
 const Ordermodle = new mongoose.Schema({
@@ -90,17 +90,17 @@ const Ordermodle = new mongoose.Schema({
         required: true,
         default: "pending"
     },
-    oderid:{
-        type:Number,
-        unique: true 
-    }
+    // oderid:{
+    //     type:Number,
+    //     unique: true 
+    // }
 });
-Ordermodle.plugin(autoIncrement.plugin, {
-    model: 'Order',   // Model name
-    field: 'orderid', // Field to auto-increment
-    startAt: 1,       // Starting value
-    incrementBy: 1    // Increment step
-});
+// Ordermodle.plugin(autoIncrement.plugin, {
+//     model: 'Order',   // Model name
+//     field: 'orderid', // Field to auto-increment
+//     startAt: 1,       // Starting value
+//     incrementBy: 1    // Increment step
+// });
 const OrderScheema = mongoose.model("OrderDetails", Ordermodle);
 
 //system Prefernces like how many employees they hava what sender whatsapp number shold be
