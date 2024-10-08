@@ -1,7 +1,19 @@
 const { UserModel } = require("../1-Modle/modle");
 
+const DisplayUser = async function (req,res) {
+    try {
+        const data = await UserModel.find();
+        res.status(200).json(data);
+         console.log("user data is displayed");
+    } catch (err) {
+        console.log(err);
+        res.status(500).send({ message: 'Internal Server Error' });
+    }
+};
+
+
 async function CreateUser(req, res) {
-    const { username, password, role } = req.body;
+const { username, password, role,duty,salary,joingindate } = req.body;
     try {
         // Check if user already exists
         const userExists = await UserModel.findOne({ username, role });
@@ -9,7 +21,7 @@ async function CreateUser(req, res) {
             return res.status(409).send({ message: 'User already exists' });
         } else {
             // Create a new user with the plain text password
-            const user = new UserModel({ username, password, role });
+            const user = new UserModel({ username, password, role,duty,salary,joingindate });
             const savedUser = await user.save();
             return res.status(201).send(savedUser); // Send the saved user data
         }
@@ -43,18 +55,24 @@ async function Loginuser(req, res) {
 }
 
 async function ChangeCredentials(req, res) {
-    const { _id, username, currentPassword, newPassword } = req.body;
+    const { _id, username, newusername, password, newpassword,duty,newduty,salery,newsalery } = req.body;
     try {
         // Find user with the provided _id
         const user = await UserModel.findOne({ _id });
 
-        if (user) {
+        if (user) 
+            {
             // Compare provided current password with the one stored in the database
-            if (currentPassword === user.password) {
+            if (password === user.password) {
                 // Update username and password using findOneAndUpdate
                 const updatedUser = await UserModel.findOneAndUpdate(
                     { _id },
-                    { username, password: newPassword },
+                    {
+                        username: newusername,
+                        password: newpassword,
+                        duty:newduty,
+                        salery:newsalery
+                     },
                     { new: true } // Return the updated document
                 );
 
@@ -96,5 +114,6 @@ module.exports = {
     ChangeCredentials,
     CreateUser,
     Loginuser,
-    DeleteUser
+    DeleteUser,
+    DisplayUser
 };
