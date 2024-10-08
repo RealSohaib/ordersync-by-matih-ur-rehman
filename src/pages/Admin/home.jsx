@@ -4,11 +4,12 @@ import axios from "axios";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import Modal from "./../../components/Modle";
 import { toast } from "react-toastify";
-import Cookies from 'js-cookie';
+import { Cookies } from 'react-cookie';
 import {Avatar} from "@mui/material"
 import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
+  const cookies=new Cookies(['user']);
   const navigate=useNavigate()
   const [menu, setMenu] = useState([]);
   const [toggler, settoggler] = useState({
@@ -22,16 +23,9 @@ const Home = () => {
   const imgPath = "../../api/uploads/";
   const [NewMenu, setNewMenu] = useState({});
   const [edit, setedit] = useState({});
-  const SetCookies=()=>{
-    axios.get(`${url}/prefernces`)
-     .then((response) => {
-        if(response.data.length>0){
-          Cookies.set('prefernces', JSON.stringify(response.data), { expires: 1 });
-        }
-      })
-  }
   useEffect(() => {
     fetchData();
+    ValidateCookies()
   }, []);
   const fetchData = () => {
     axios
@@ -43,7 +37,11 @@ const Home = () => {
         console.log("Error fetching menu data:", error);
       });
   };
-
+  const ValidateCookies=()=>{
+    if(!cookies.get(['user'])){
+      navigate("/login");
+    }    
+  }
   const handleEdit = (item) => {
     setedit(item);
     console.log("Edit item:", item);
@@ -55,7 +53,7 @@ const Home = () => {
     console.log(edit);
   }, [edit]);
   const removeCookies = () => {
-    cookies.remove('user');
+    cookies.remove(['user']);
     navigate("/login");
 };
   const ConfirmEdit = () => {
@@ -66,7 +64,6 @@ const Home = () => {
           console.log("Edit successful");
           settoggler((prevState) => ({ ...prevState, editItem: false }));
           fetchData(); // Refresh the menu data after edit
-          toast("Succefuly item Edited")
         })
         .catch((err) => {
           console.log(err);
