@@ -1,7 +1,7 @@
-const { MenuModel, OrderModel } = require("../1-Modle/modle.js");
+const { MenuModel,SystemModel } = require("../1-Modle/modle.js");
 
 const CreateMenu = async function (req, res) {
-    const { name, price, image, category, description } = req.body;
+    const { name, price, image, category,stock, description } = req.body;
 
     try {
         const menu = new MenuModel({
@@ -9,6 +9,7 @@ const CreateMenu = async function (req, res) {
             price,
             image,
             category,
+            stock,
             description
         });
 
@@ -29,7 +30,7 @@ const DisplayMenu = async function (req, res) {
     try {
         const data = await MenuModel.find();
         res.status(200).json(data);
-        console.log(data);
+        console.log("Menu is displayed ");
     } catch (err) {
         console.log(err);
         res.status(500).send({ message: 'Internal Server Error' });
@@ -37,11 +38,11 @@ const DisplayMenu = async function (req, res) {
 };
         
 const EditMenu = async function (req, res) {
-    const { _id, name, price, image, category, description } = req.body;
+    const { _id, name, price, image, category, stock, description } = req.body;
     try {
         const data = await MenuModel.findOneAndUpdate(
             { _id }, // Find the menu item by _id
-            { name, price, image, category, description }, // Update the fields
+            { name, price, image, category,stock, description }, // Update the fields
             { new: true } // Return the updated document
         );
 
