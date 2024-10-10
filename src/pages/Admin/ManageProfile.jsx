@@ -28,7 +28,7 @@ const ManageProfile = () => {
     }, [navigate]);
 
     const removeCookies = () => {
-        cookies.remove('user');
+        cookies.remove(['user']);
         navigate("/login");
     };
 
