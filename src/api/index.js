@@ -3,10 +3,11 @@ const app = express();
 const Userview = require("./3-View/User-view");
 const Menuview = require("./3-View/Menu-view");
 const OrderDetails = require("./3-View/OrderDetails-view");
-
+const Connection =require('./connection');
 let port = 3001;
 
 try{
+    Connection()
     Userview(app);
     Menuview(app);
     OrderDetails(app);
