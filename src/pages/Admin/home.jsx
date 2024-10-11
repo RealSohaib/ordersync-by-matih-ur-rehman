@@ -1,426 +1,302 @@
-import { useState, useEffect } from "react";
-import Layout from "./Layout";
-import axios from "axios";
-import { FaEdit, FaTrash } from "react-icons/fa";
-import Modal from "./../../components/Modle";
-import { toast } from "react-toastify";
-import { Cookies } from 'react-cookie';
-import {Avatar} from "@mui/material"
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { Cookies } from 'react-cookie';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import Layout from './Layout';
+const API_URL = 'http://localhost:3001';
+const IMG_PATH = '../../api/uploads/';
 
-const Home = () => {
-  const cookies=new Cookies(['user']);
-  const navigate=useNavigate()
+export default function Dashboard() {
   const [menu, setMenu] = useState([]);
-  const [toggler, settoggler] = useState({
-    addItem: false,
-    deleteItem: false,
-    deleteConfirmation: false,
-    editItem: false,
-    categoryToggler: false,
-  });
-  const url = "http://localhost:3001/";
-  const imgPath = "../../api/uploads/";
-  const [NewMenu, setNewMenu] = useState({});
-  const [edit, setedit] = useState({});
+  const [editItem, setEditItem] = useState(null);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const navigate = useNavigate();
+  const cookies = useMemo(() => new Cookies(), []);
+
+  const validateCookies = useCallback(() => {
+    // const userRole = cookies.user.role;
+    if (!cookies) {
+      navigate('/login');
+    }
+    else{
+      // toast.success('Welcome to admin dashboard');
+    }
+  }, [cookies, navigate]);
+
   useEffect(() => {
+    validateCookies('user');
     fetchData();
-    ValidateCookies()
-  }, []);
-  const fetchData = () => {
-    axios
-      .get(`${url}`)
-      .then((response) => {
-        setMenu(response.data);
-      })
-      .catch((error) => {
-        console.log("Error fetching menu data:", error);
-      });
-  };
-  const ValidateCookies=()=>{
-    if(!cookies.get(['user'])){
-      navigate("/login");
-    }    
-  }
-  const handleEdit = (item) => {
-    setedit(item);
-    console.log("Edit item:", item);
+  }, [validateCookies]);
 
-    settoggler((prevState) => ({ ...prevState, editItem: true }));
-  };
-
-  useEffect(() => {
-    console.log(edit);
-  }, [edit]);
-  const removeCookies = () => {
-    cookies.remove(['user']);
-    navigate("/login");
-};
-  const ConfirmEdit = () => {
-    const data = edit;
+  const fetchData = async () => {
     try {
-      axios.put(`http://localhost:3001/menu/edititem`, data)
-        .then(() => {
-          console.log("Edit successful");
-          settoggler((prevState) => ({ ...prevState, editItem: false }));
-          fetchData(); // Refresh the menu data after edit
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-    } catch (ex) {
-      console.log(ex);
+      const response = await axios.get(`${API_URL}`);
+      setMenu(response.data);
+    } catch (error) {
+      console.error('Error fetching menu data:', error);
+      toast.error('Failed to fetch menu data');
     }
   };
 
-  const handleDelete = (item) => {
-    setNewMenu(item); // Set the item to be deleted
-    settoggler((prevState) => ({ ...prevState, deleteItem: true }));
-  };
-
-  const confirmDelete = (menu) => {
-    axios
-      .delete(`${url}menu/deleteitem`, { data: { name: menu.name } })
-      .then((response) => {
-        fetchData(); // Refresh the menu data after deletion
-        console.log(menu);
-        settoggler((prevState) => ({ ...prevState, deleteItem: false }));
-      
-        toast("Succefuly item deleted",response)
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+  const handleLogout = () => {
+    cookies.remove('user');
+    navigate('/login');
   };
 
   const handleAddItem = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     try {
-      const response = await axios.post("http://localhost:3001/menu/additems", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+      await axios.post(`${API_URL}/menu/additems`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
-      console.log("Item added:", response.data);
-      fetchData(); // Refresh the menu data
-      settoggler((prevState) => ({ ...prevState, addItem: false }));
+      fetchData();
+      setIsAddModalOpen(false);
+      toast.success('Item added successfully');
     } catch (error) {
-      console.error("Error adding item:", error);
+      console.error('Error adding item:', error);
+      toast.error('Failed to add item');
     }
   };
 
-  const categories = [...new Set(menu.map(item => item.category))];
+  const handleEditItem = async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    try {
+      await axios.put(`${API_URL}/menu/edititem`, Object.fromEntries(formData));
+      fetchData();
+      setIsEditModalOpen(false);
+      toast.success('Item updated successfully');
+    } catch (error) {
+      console.error('Error updating item:', error);
+      toast.error('Failed to update item');
+    }
+  };
+
+  const handleDeleteItem = async () => {
+    try {
+      await axios.delete(`${API_URL}/menu/deleteitem`, { data: { name: itemToDelete.name } });
+      fetchData();
+      setIsDeleteModalOpen(false);
+      toast.success('Item deleted successfully');
+    } catch (error) {
+      console.error('Error deleting item:', error);
+      toast.error('Failed to delete item');
+    }
+  };
+
+  const filteredMenu = menu.filter((item) =>
+    item.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
-    <div>
-      <Layout>
-        <div className="w-full flex justify-between rounded-xl items-center py-3 px-3 shadow-lg bg-white">
-          <h1 className="font-bold text-4xl">Dashboard</h1>
-          
-<button
-                        className="inline-flex items-center justify-center px-8 py-4 font-sans font-semibold tracking-wide text-white bg-matte-red transition-all hover:bg-red-800 rounded-lg h-[60px]"
-                        onClick={removeCookies}
-                    >
-                        Logout
-                    </button>
-                            </div>
+    <Layout>
 
-        <div className=" my-1 rounded-md backdrop-blur-md
-         border-1 py-3   flex items-center justify-center
-          gap-3 container">
-         <div>
-          <input
-            type="text"
-            placeholder="Enter your content"
-            className="bg-white w-[300px] border border-slate-200 rounded-lg py-3 px-5 outline-none  bg-transparent"
-            /><button
-            className="inline-flex items-center justify-center px-8 py-4 font-sans font-semibold tracking-wide text-white bg-matte-red transition-all hover:bg-red-800 rounded-lg h-[60px]"
-            onClick={() => settoggler((prevState) => ({ ...prevState, addItem: true }))}
-            >
-          Search
-        </button>
-            </div>
+    <div className="min-h-screen bg-gray-100">
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
+      <header className="bg-white shadow">
+        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
           <button
-            className="inline-flex items-center justify-center px-8 py-4 font-sans font-semibold tracking-wide text-white bg-matte-red transition-all hover:bg-red-800 rounded-lg h-[60px]"
-             onClick={() => settoggler((prevState) => ({ ...prevState, addItem: true }))}
+            onClick={handleLogout}
+            className="px-4 py-2 font-semibold text-white bg-red-600 rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-75 transition-colors duration-200"
+          >
+            Logout
+          </button>
+        </div>
+      </header>
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-6 space-y-4 sm:space-y-0">
+          <div className="flex items-center w-full sm:w-auto">
+            <input
+              type="text"
+              placeholder="Search items..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full sm:w-64 px-4 py-2 rounded-l-lg border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+            <button className="px-4 py-2 bg-blue-500 text-white rounded-r-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors duration-200">
+              Search
+            </button>
+          </div>
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="w-full sm:w-auto px-4 py-2 font-semibold text-white bg-green-500 rounded-lg shadow-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-75 transition-colors duration-200"
           >
             Add Item
           </button>
-          </div>
-        {/* adding item option */}
-        <div>
-          <Modal
-            isOpen={toggler.addItem}
-            onClose={() => settoggler((prevState) => ({ ...prevState, addItem: false }))}
-            title={"Add a New Menu Item"}
-            btnTitle={"Add Item"}
-            type="submit"
-          >
-            <form onSubmit={handleAddItem}>
-              <div className="flex flex-col items-start gap-y-3">
-                <label htmlFor="name" className="text-sm font-medium cursor-pointer">
-                  Add Name
-                </label>
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  className="w-full p-4 bg-transparent border border-gray-200 rounded-lg outline-none"
-                  placeholder="Enter your name"
-                />
-              </div>
-              <div className="flex flex-col items-start gap-y-3">
-                <label htmlFor="category" className="text-sm font-medium cursor-pointer">
-                  Add Category
-                </label>
-                <div>
-                  <select>
-                    {categories.map((category, index) => (
-                      <option key={index} value={category}>
-                        {category}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    className="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700"
-                    onClick={() =>
-                      settoggler((prevState) => ({
-                        ...prevState,
-                        categoryToggler: !prevState.categoryToggler,
-                      }))
-                    }
-                  >
-                    +
-                  </button>
-                </div>
-                {toggler.categoryToggler ? (
-                  <input
-                    id="newCategory"
-                    name="newCategory"
-                    type="text"
-                    className="w-full p-4 bg-transparent border border-gray-200 rounded-lg outline-none"
-                    placeholder="Enter new category"
-                  />
-                ) : null}
-              </div>
-              <div className="flex flex-col items-start gap-y-3">
-                <label htmlFor="price" className="text-sm font-medium cursor-pointer">
-                  Add Price
-                </label>
-                <input
-                  id="price"
-                  name="price"
-                  type="text"
-                  className="w-full p-4 bg-transparent border border-gray-200 rounded-lg outline-none"
-                  placeholder="Enter price"
-                />
-              </div>
-              <div className="flex flex-col items-start gap-y-3">
-                <label htmlFor="image" className="text-sm font-medium cursor-pointer">
-                  Add Image
-                </label>
-                <input type="file" name="image" id="image" />
-              </div>
-              <div className="flex flex-col items-start gap-y-3">
-                <label htmlFor="description" className="text-sm font-medium cursor-pointer">
-                  Add Description (optional)
-                </label>
-                <textarea name="description" id="description" cols={50}></textarea>
-              </div>
-            </form>
-          </Modal>
-
-          {/* Edit Modal */}
-          <Modal
-            isOpen={toggler.editItem}
-            onClose={() => settoggler((prevState) => ({ ...prevState, editItem: false }))}
-            title={"Edit Menu Item"}
-            onClick={ConfirmEdit}
-            btnTitle={"Save Changes"}
-          >
-            <div className="flex flex-col items-start gap-y-3">
-              <label htmlFor="editName" className="text-sm font-medium cursor-pointer">
-                Edit Name
-              </label>
-              <input
-                id="editName"
-                type="text"
-                value={edit.name}
-                onChange={(e) => setedit({ ...edit, name: e.target.value })}
-                className="w-full p-4 bg-transparent border border-gray-200 rounded-lg outline-none"
-                placeholder="Enter name"
-              />
-            </div>
-            <div className="flex flex-col items-start gap-y-3">
-              <label htmlFor="editCategory" className="text-sm font-medium cursor-pointer">
-                Edit Category
-              </label>
-              <div>
-                <select
-                  onChange={(e) => setedit({ ...edit, category: e.target.value })}
-                >
-                  {categories.map((category, index) => (
-                    <option key={index} value={category}>
-                      {category}
-                    </option>
-                  ))}
-                </select>
-                <button
-                  className="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700"
-                  onClick={() =>
-                    settoggler((prevState) => ({
-                      ...prevState,
-                      categoryToggler: !prevState.categoryToggler,
-                    }))
-                  }
-                >
-                  +
-                </button>
-              </div>
-              {toggler.categoryToggler ? (
-                <input
-                  id="newEditCategory"
-                  type="text"
-                  value={edit.category}
-                  onChange={(e) => setedit({ ...edit, category: e.target.value })}
-                  className="w-full p-4 bg-transparent border border-gray-200 rounded-lg outline-none"
-                  placeholder="Enter new category"
-                />
-              ) : null}
-            </div>
-            <div className="flex flex-col items-start gap-y-3">
-              <label htmlFor="editPrice" className="text-sm font-medium cursor-pointer">
-                Edit Available Stock
-              </label>
-              <input
-                id="editPrice"
-                type="number"
-                value={edit.stock}
-                onChange={(e) => setedit({ ...edit, stock: e.target.value })}
-                className="w-full p-4 bg-transparent border border-gray-200 rounded-lg outline-none"
-                placeholder="Enter price"
-              />
-            </div>
-            <div className="flex flex-col items-start gap-y-3">
-              <label htmlFor="editPrice" className="text-sm font-medium cursor-pointer">
-                Edit Price
-              </label>
-              <input
-                id="editPrice"
-                type="text"
-                value={edit.price}
-                onChange={(e) => setedit({ ...edit, price: e.target.value })}
-                className="w-full p-4 bg-transparent border border-gray-200 rounded-lg outline-none"
-                placeholder="Enter price"
-              />
-            </div>
-            <div className="flex flex-col items-start gap-y-3">
-              <label htmlFor="editImage" className="text-sm font-medium cursor-pointer">
-                Edit Image
-              </label>
-              <input type="file" name="image" id="editImage" />
-            </div>
-            <div className="flex flex-col items-start gap-y-3">
-              <label htmlFor="editDescription" className="text-sm font-medium cursor-pointer">
-                Edit Description (optional)
-              </label>
-              <textarea
-                name="description"
-                id="editDescription"
-                value={edit.description}
-                onChange={(e) => setedit({ ...edit, description: e.target.value })}
-                cols={50}
-              ></textarea>
-            </div>
-          </Modal>
-
-          {/* Delete Modal */}
-          <Modal
-            isOpen={toggler.deleteItem}
-            onClose={() => settoggler((prevState) => ({ ...prevState, deleteItem: false }))}
-            title={"Do you want to delete this item"}
-            btnTitle={"Delete"}
-            onClick={() => confirmDelete(NewMenu)} // Corrected prop name to onConfirm
-          >
-            <h1>{NewMenu.name}</h1>
-          </Modal>
         </div>
-
-        {/* <div className=" rounded-md backdrop-blur-md 
-        drop-shadow-md flex flex-wrap items-center justify-center 
-        gap-4 text-center
-        overflow-x-auto
-        ">
-          {menu.map((item, index) => (
-            <Card
-              key={item.id || index}
-              image={item.image}
-              name={item.name}
-              category={item.category}
-              description={item.descrption}
-              price={item.price}
-              className="w-full sm:w-1/2 md:w-1/3 lg:w-1/4 p-2"
-            >
-              <button className="inline-flex items-center justify-center px-8 py-4 font-sans font-semibold tracking-wide text-white bg-matte-red rounded-lg h-[60px]" onClick={() => AddToCartHandler(item)}>
-                Add to Cart
-              </button>
-              <button className="inline-flex items-center justify-center px-8 py-4 font-sans font-semibold tracking-wide text-white bg-matte-red rounded-lg h-[60px]" onClick={() => OrderNowHandler(item)}>
-                Order Now
-              </button>
-            </Card>
-          ))}
-        </div> */}
-        <div className="mt-6 overflow-x-auto">
-          <table className="min-w-full bg-white">
-            <thead>
+        <div className="bg-white shadow-md rounded-lg overflow-hidden">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
               <tr>
-                <th className="py-2 px-4 border-b">Image</th>
-                <th className="py-2 px-4 border-b">Name</th>
-                <th className="py-2 px-4 border-b">Price</th>
-                <th className="py-2 px-4 border-b">Category</th>
-                <th className="py-2 px-4 border-b">Description</th>
-                <th className="py-2 px-4 border-b">Available Stock</th>
-                <th className="py-2 px-4 border-b">Options</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody>
-              {menu.map((item) => (
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredMenu.map((item) => (
                 <tr key={item._id}>
-                  <td className="py-2 px-4 border-b"><Avatar alt="Remy Sharp" src={item.image?`${imgPath}+${item.image}`:"../public/vite.svg"} /></td>
-                  <td className="py-2 px-4 border-b item-center justify-center">{item.name}</td>
-                  <td className="py-2 px-4 border-b item-center justify-center">${item.price}</td>
-                  <td className="py-2 px-4 border-b item-center justify-center">{item.category}</td>
-                  <td className="py-2 px-4 border-b overflow-hidden">{item.description}</td>
-                  <td className="py-2 px-4 border-b">{
-                  item.stock===0?
-                  <span className="text-red-500 font-bold">Out of Stock</span>
-                  :
-                  item.stock
-                  }</td>
-                  <td className="py-2 px-4 border-b">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <img
+                      src={item.image ? `${IMG_PATH}${item.image}` : '/placeholder.svg'}
+                      alt={item.name}
+                      className="h-10 w-10 rounded-full object-cover"
+                    />
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">{item.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">${item.price}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{item.category}</td>
+                  <td className="px-6 py-4 whitespace-nowrap truncate max-w-xs">{item.description}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {item.stock === 0 ? (
+                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                        Out of Stock
+                      </span>
+                    ) : (
+                      item.stock
+                    )}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <button
-                      className="text-blue-500 hover:text-blue-700 mr-2"
-                      onClick={() => handleEdit(item)}
+                      onClick={() => {
+                        setEditItem(item);
+                        setIsEditModalOpen(true);
+                      }}
+                      className="text-indigo-600 hover:text-indigo-900 mr-4"
                     >
-                      <FaEdit />
+                      Edit
                     </button>
                     <button
-                      className="text-red-500 hover:text-red-700"
-                      onClick={() => handleDelete(item)}
+                      onClick={() => {
+                        setItemToDelete(item);
+                        setIsDeleteModalOpen(true);
+                      }}
+                      className="text-red-600 hover:text-red-900"
                     >
-                      <FaTrash />
+                      Delete
                     </button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-
         </div>
-      </Layout>
-    </div>
-  );
-};
+      </main>
 
-export default Home;
+      {/* Add Item Modal */}
+      {isAddModalOpen && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" id="add-modal">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3 text-center">
+              <h3 className="text-lg leading-6 font-medium text-gray-900">Add New Item</h3>
+              <form onSubmit={handleAddItem} className="mt-2 text-left">
+                <input name="name" placeholder="Item Name" required className="mt-2 p-2 w-full border rounded" />
+                <select name="category" required className="mt-2 p-2 w-full border rounded">
+                  <option value="">Select Category</option>
+                  {[...new Set(menu.map((item) => item.category))].map((category) => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
+                </select>
+                <button className="px-4 py-2 bg-blue-500 text-white rounded-r-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors duration-200">
+              add
+            </button>
+                <input name="price" type="number" placeholder="Price" required className="mt-2 p-2 w-full border rounded" />
+                <input name="stock" type="number" placeholder="Available Stock" required className="mt-2 p-2 w-full border rounded" />
+                <input name="image" type="file" className="mt-2 p-2 w-full border rounded" />
+                <textarea name="description" placeholder="Description (optional)" className="mt-2 p-2 w-full border rounded" />
+                <div className="items-center px-4 py-3">
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-blue-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                  >
+                    Add Item
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Item Modal */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" id="edit-modal">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3 text-center">
+              <h3 className="text-lg leading-6 font-medium text-gray-900">Edit Item</h3>
+              <form onSubmit={handleEditItem} className="mt-2 text-left">
+                <input name="name" defaultValue={editItem?.name} required className="mt-2 p-2 w-full border rounded" />
+                <select name="category" defaultValue={editItem?.category} required className="mt-2 p-2 w-full border rounded">
+                  {[...new Set(menu.map((item) => item.category))].map((category) => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
+                </select>
+                <input name="price" type="number" defaultValue={editItem?.price} required className="mt-2 p-2 w-full border rounded" />
+                <input name="stock" type="number" defaultValue={editItem?.stock} required className="mt-2 p-2 w-full border rounded" />
+                <input name="image" type="file" className="mt-2 p-2 w-full border rounded" />
+                <textarea name="description" defaultValue={editItem?.description} className="mt-2 p-2 w-full border rounded" />
+                <div className="items-center px-4 py-3">
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-blue-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" id="delete-modal">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3 text-center">
+              <h3 className="text-lg leading-6 font-medium text-gray-900">Confirm Deletion</h3>
+              <div className="mt-2 px-7 py-3">
+                <p className="text-sm text-gray-500">
+                  Are you sure you want to delete {itemToDelete?.name}?
+                </p>
+              </div>
+              <div className="items-center px-4 py-3">
+                <button
+                  onClick={handleDeleteItem}
+                  className="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300"
+                >
+                  Delete
+                </button>
+                <button
+                  onClick={() => setIsDeleteModalOpen(false)}
+                  className="mt-3 px-4 py-2 bg-gray-300 text-gray-800 text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+    </Layout>
+
+  );
+}
