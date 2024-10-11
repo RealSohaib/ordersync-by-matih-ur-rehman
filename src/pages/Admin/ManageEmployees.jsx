@@ -1,14 +1,14 @@
-import { useEffect, useState } from "react";
-import Layout from "./Layout";
-import axios from "axios";
-import Modal from "../../components/Modle";
-import { FaEdit, FaTrash, FaUserCircle } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { Cookies } from 'react-cookie';
+import { Edit2, LogOut, User } from 'lucide-react';
+import Layout from './Layout';
+import Modal from '../../components/Modle';
 
 const url = "http://localhost:3001/user";
 
-const Manageemployees = () => {
+const ManageEmployees = () => {
   const cookies = new Cookies();
   const [users, setUsers] = useState([]);
   const [Employees, setEmployees] = useState(null);
@@ -120,237 +120,249 @@ const Manageemployees = () => {
   };
 
   return (
-    <div>
-      <Layout>
-        <div className="w-full flex justify-between rounded-xl items-center py-3 px-3 shadow-lg bg-white">
-          <h1 className="font-bold text-4xl">Employees Dashboard</h1>
+    <Layout>
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold text-gray-900">Manage Employees</h1>
           <button
-            className="inline-flex items-center justify-center px-8 py-4 font-sans font-semibold tracking-wide text-white bg-matte-red transition-all hover:bg-red-800 rounded-lg h-[60px]"
             onClick={removeCookies}
+            className="flex items-center space-x-2 px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
           >
-            Logout
+            <LogOut size={20} />
+            <span>Logout</span>
           </button>
         </div>
-        <div className="backdrop-blur-md border-1 py-3 px-1 w-full flex items-center justify-between gap-3 rounded-md my-2 border-black shadow-xl">
-          <button
-            className="inline-flex items-center justify-center px-8 py-4 font-sans font-semibold tracking-wide text-white bg-matte-red transition-all hover:bg-red-800 rounded-lg h-[60px]"
-            onClick={() => setToggler((prevState) => ({ ...prevState, createUser: true }))}
-          >
-            Add Staff
-          </button>
-          <input
-            type="text"
-            placeholder="search..."
-            className="bg-white w-[300px] border border-slate-200 rounded-lg py-3 px-5 outline-none bg-transparent"
-          />
+
+        <div className="bg-white shadow rounded-lg overflow-hidden">
+          <div className="p-6">
+            <button
+              onClick={() => setToggler((prevState) => ({ ...prevState, createUser: true }))}
+              className="w-full sm:w-auto px-4 py-2 font-semibold text-white bg-green-500 rounded-lg shadow-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-75 transition-colors duration-200"
+            >
+              Add Staff
+            </button>
+            <input
+              type="text"
+              placeholder="Search..."
+              className="mt-4 w-full sm:w-64 px-4 py-2 rounded-lg border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
         </div>
+
         <Modal
           isOpen={toggler.createUser}
           onClose={() => setToggler((prevState) => ({ ...prevState, createUser: false }))}
-          title={"Add a New Employee"}
-          btnTitle={"Add"}
-          onSubmit={handleNewUser()}
+          title="Add a New Employee"
+          btnTitle="Add"
+          onClick={handleNewUser}
         >
-          <div className="flex flex-col items-start gap-y-3">
-            <label htmlFor="name" className="text-sm font-medium cursor-pointer">
-              Username
-            </label>
-            <input
-              id="name"
-              type="text"
-              onChange={(e) => setNewUser({ ...newuser, name: e.target.value })}
-              className="w-full p-4 bg-transparent border border-gray-200 rounded-lg outline-none"
-              placeholder="Enter username"
-            />
-          </div>
-          <div className="flex flex-col items-start gap-y-3">
-            <label htmlFor="password" className="text-sm font-medium cursor-pointer">
-              Password
-            </label>
-            <input
-              id="password"
-              type="text"
-              onChange={(e) => setNewUser({ ...newuser, password: e.target.value })}
-              className="w-full p-4 bg-transparent border border-gray-200 rounded-lg outline-none"
-              placeholder="Enter Password"
-            />
-          </div>
-          <div className="flex flex-col items-start gap-y-4">
-            <label htmlFor="duty" className="text-sm font-medium cursor-pointer">
-              Duty
-            </label>
-            <div className="flex justify-between w-full">
-              <select
-                name="duty"
-                onChange={(e) => setNewUser({ ...newuser, duty: e.target.value })}
-                className="flex items-center w-full transition-all hover:border-black text-2xl border-2 rounded-md"
-                id="duty"
-              >
-                {duty.length > 0 ? (
-                  duty.map((item, index) => (
-                    <option key={index} value={item}>
-                      {item}
-                    </option>
-                  ))
-                ) : (
-                  <option disabled>No duties available</option>
-                )}
-              </select>
-              <button
-                onClick={() => setToggler((prevState) => ({ ...prevState, dutyToggler: true }))}
-                className="inline-flex items-center justify-center px-8 py-4 font-sans font-semibold tracking-wide text-white bg-matte-red transition-all hover:bg-red-800 rounded-lg h-[60px]"
-              >
-                +
-              </button>
-            </div>
-            {toggler.dutyToggler ? (
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                Username
+              </label>
               <input
-                id="duty"
+                id="name"
                 type="text"
-                onChange={(e) => setNewUser({ ...newuser, duty: e.target.value })}
-                className="w-full p-4 bg-transparent border border-gray-200 rounded-lg outline-none"
-                placeholder="Assign a Duty"
+                onChange={(e) => setNewUser({ ...newuser, name: e.target.value })}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Enter username"
               />
-            ) : null}
-          </div>
-          <div className="flex flex-col items-start gap-y-3">
-            <label htmlFor="salary" className="text-sm font-medium cursor-pointer">
-              Salary
-            </label>
-            <div className="flex items-center justify-center">
-              <input
-                id="salary"
-                type="number"
-                onChange={(e) => setNewUser({ ...newuser, salary: e.target.value })}
-                className="w-full p-4 bg-transparent border border-gray-200 rounded-lg outline-none"
-                placeholder="Enter Salary"
-              />
-              <span>PKR</span>
             </div>
-          </div>
-          <div className="flex flex-col items-start gap-y-3">
-            <label htmlFor="joining-date" className="text-sm font-medium cursor-pointer">
-              Joining Date
-            </label>
-            <input
-              id="joining-date"
-              type="date"
-              onChange={(e) => setNewUser({ ...newuser, joiningdate: e.target.value })}
-              className="w-full p-4 bg-transparent border border-gray-200 rounded-lg outline-none"
-              placeholder="Enter Joining Date"
-            />
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                onChange={(e) => setNewUser({ ...newuser, password: e.target.value })}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Enter Password"
+              />
+            </div>
+            <div>
+              <label htmlFor="duty" className="block text-sm font-medium text-gray-700">
+                Duty
+              </label>
+              <div className="flex justify-between w-full">
+                <select
+                  name="duty"
+                  onChange={(e) => setNewUser({ ...newuser, duty: e.target.value })}
+                  className="flex items-center w-full transition-all hover:border-black text-2xl border-2 rounded-md"
+                  id="duty"
+                >
+                  {duty.length > 0 ? (
+                    duty.map((item, index) => (
+                      <option key={index} value={item}>
+                        {item}
+                      </option>
+                    ))
+                  ) : (
+                    <option disabled>No duties available</option>
+                  )}
+                </select>
+                <button
+                  onClick={() => setToggler((prevState) => ({ ...prevState, dutyToggler: true }))}
+                  className="inline-flex items-center justify-center px-8 py-4 font-sans font-semibold tracking-wide text-white bg-matte-red transition-all hover:bg-red-800 rounded-lg h-[60px]"
+                >
+                  +
+                </button>
+              </div>
+              {toggler.dutyToggler ? (
+                <input
+                  id="duty"
+                  type="text"
+                  onChange={(e) => setNewUser({ ...newuser, duty: e.target.value })}
+                  className="w-full p-4 bg-transparent border border-gray-200 rounded-lg outline-none"
+                  placeholder="Assign a Duty"
+                />
+              ) : null}
+            </div>
+            <div>
+              <label htmlFor="salary" className="block text-sm font-medium text-gray-700">
+                Salary
+              </label>
+              <div className="flex items-center justify-center">
+                <input
+                  id="salary"
+                  type="number"
+                  onChange={(e) => setNewUser({ ...newuser, salary: e.target.value })}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Enter Salary"
+                />
+                <span>PKR</span>
+              </div>
+            </div>
+            <div>
+              <label htmlFor="joining-date" className="block text-sm font-medium text-gray-700">
+                Joining Date
+              </label>
+              <input
+                id="joining-date"
+                type="date"
+                onChange={(e) => setNewUser({ ...newuser, joiningdate: e.target.value })}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Enter Joining Date"
+              />
+            </div>
           </div>
         </Modal>
+
         <Modal
           isOpen={toggler.deleteConfirmation}
           onClose={() => setToggler((prevState) => ({ ...prevState, deleteConfirmation: false }))}
-          title={"Delete the following User?"}
-          btnTitle={"Delete"}
-          onSubmit={ConfirmDelete()}
+          title="Delete the following User?"
+          btnTitle="Delete"
+          onClick={ConfirmDelete}
         >
           <h1>{users ? users.username : null}</h1>
         </Modal>
+
         <Modal
           isOpen={toggler.editUser}
           onClose={() => setToggler((prevState) => ({ ...prevState, editUser: false }))}
-          title={"Edit User"}
-          btnTitle={"Edit"}
-          onSubmit={ConfirmEdit()}
+          title="Edit User"
+          btnTitle="Edit"
+          onClick={ConfirmEdit}
         >
-          <div className="flex flex-col items-start gap-y-3">
-            <label htmlFor="username" className="text-sm font-medium cursor-pointer">
-              Username
-            </label>
-            <input
-              id="username"
-              type="text"
-              value={edit.username || ""}
-              onChange={(e) => setEdit({ ...edit, username: e.target.value })}
-              className="w-full p-4 bg-transparent border border-gray-200 rounded-lg outline-none"
-            />
-          </div>
-          <div className="flex flex-col items-start gap-y-3">
-            <label htmlFor="password" className="text-sm font-medium cursor-pointer">
-              Password
-            </label>
-            <input
-              id="password"
-              type="text"
-              value={edit.password || ""}
-              onChange={(e) => setEdit({ ...edit, password: e.target.value })}
-              className="w-full p-4 bg-transparent border border-gray-200 rounded-lg outline-none"
-              placeholder="Enter Password"
-            />
-          </div>
-          <div className="flex flex-col items-start gap-y-4">
-            <label htmlFor="duty" className="text-sm font-medium cursor-pointer">
-              Duty
-            </label>
-            <div className="flex justify-between w-full">
-              <select
-                name="duty"
-                onChange={(e) => setEdit({ ...edit, duty: e.target.value })}
-                className="flex items-center w-full transition-all hover:border-black text-2xl border-2 rounded-md"
-                id="duty"
-                value={edit.duty || ""}
-              >
-                {duty.length > 0 ? (
-                  duty.map((item, index) => (
-                    <option key={index} value={item}>
-                      {item}
-                    </option>
-                  ))
-                ) : (
-                  <option disabled>No duties available</option>
-                )}
-              </select>
-              <button
-                onClick={() => setToggler((prevState) => ({ ...prevState, dutyToggler: true }))}
-                className="inline-flex items-center justify-center px-8 py-4 font-sans font-semibold tracking-wide text-white bg-matte-red transition-all hover:bg-red-800 rounded-lg h-[60px]"
-              >
-                +
-              </button>
-            </div>
-            {toggler.dutyToggler ? (
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+                Username
+              </label>
               <input
-                id="duty-assignment"
+                id="username"
                 type="text"
-                value={edit.duty || ""}
-                onChange={(e) => setEdit({ ...edit, duty: e.target.value })}
-                className="w-full p-4 bg-transparent border border-gray-200 rounded-lg outline-none"
-                placeholder="Assign a Duty"
+                value={edit.username || ""}
+                onChange={(e) => setEdit({ ...edit, username: e.target.value })}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               />
-            ) : null}
-          </div>
-          <div className="flex flex-col items-start gap-y-3">
-            <label htmlFor="salary" className="text-sm font-medium cursor-pointer">
-              Salary
-            </label>
-            <div className="flex items-center justify-center">
-              <input
-                id="salary"
-                type="number"
-                value={edit.salary || ""}
-                onChange={(e) => setEdit({ ...edit, salary: e.target.value })}
-                className="w-full p-4 bg-transparent border border-gray-200 rounded-lg outline-none"
-                placeholder="Enter Salary"
-              />
-              <span>PKR</span>
             </div>
-          </div>
-          <div className="flex flex-col items-start gap-y-3">
-            <label htmlFor="joining-date" className="text-sm font-medium cursor-pointer">
-              Joining Date
-            </label>
-            <input
-              id="joining-date"
-              type="date"
-              onChange={(e) => setEdit({ ...edit, joiningdate: e.target.value })}
-              value={edit.joiningdate || ""}
-              className="w-full p-4 bg-transparent border border-gray-200 rounded-lg outline-none"
-            />
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                value={edit.password || ""}
+                onChange={(e) => setEdit({ ...edit, password: e.target.value })}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Enter Password"
+              />
+            </div>
+            <div>
+              <label htmlFor="duty" className="block text-sm font-medium text-gray-700">
+                Duty
+              </label>
+              <div className="flex justify-between w-full">
+                <select
+                  name="duty"
+                  onChange={(e) => setEdit({ ...edit, duty: e.target.value })}
+                  className="flex items-center w-full transition-all hover:border-black text-2xl border-2 rounded-md"
+                  id="duty"
+                  value={edit.duty || ""}
+                >
+                  {duty.length > 0 ? (
+                    duty.map((item, index) => (
+                      <option key={index} value={item}>
+                        {item}
+                      </option>
+                    ))
+                  ) : (
+                    <option disabled>No duties available</option>
+                  )}
+                </select>
+                <button
+                  onClick={() => setToggler((prevState) => ({ ...prevState, dutyToggler: true }))}
+                  className="inline-flex items-center justify-center px-8 py-4 font-sans font-semibold tracking-wide text-white bg-matte-red transition-all hover:bg-red-800 rounded-lg h-[60px]"
+                >
+                  +
+                </button>
+              </div>
+              {toggler.dutyToggler ? (
+                <input
+                  id="duty-assignment"
+                  type="text"
+                  value={edit.duty || ""}
+                  onChange={(e) => setEdit({ ...edit, duty: e.target.value })}
+                  className="w-full p-4 bg-transparent border border-gray-200 rounded-lg outline-none"
+                  placeholder="Assign a Duty"
+                />
+              ) : null}
+            </div>
+            <div>
+              <label htmlFor="salary" className="block text-sm font-medium text-gray-700">
+                Salary
+              </label>
+              <div className="flex items-center justify-center">
+                <input
+                  id="salary"
+                  type="number"
+                  value={edit.salary || ""}
+                  onChange={(e) => setEdit({ ...edit, salary: e.target.value })}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Enter Salary"
+                />
+                <span>PKR</span>
+              </div>
+            </div>
+            <div>
+              <label htmlFor="joining-date" className="block text-sm font-medium text-gray-700">
+                Joining Date
+              </label>
+              <input
+                id="joining-date"
+                type="date"
+                onChange={(e) => setEdit({ ...edit, joiningdate: e.target.value })}
+                value={edit.joiningdate || ""}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
           </div>
         </Modal>
+
         <div className="mt-6 overflow-x-auto">
           <table className="min-w-full bg-white">
             <thead>
@@ -368,7 +380,7 @@ const Manageemployees = () => {
               {Employees?.map((item) => (
                 <tr key={item._id}>
                   <td className="py-2 px-4 border-b flex justify-center">
-                    <FaUserCircle className="text-2xl" />
+                    <User size={32} />
                   </td>
                   <td className="py-2 px-4 border-b item-center justify-center">{item.username}</td>
                   <td className="py-2 px-4 border-b item-center">{item.password}</td>
@@ -382,7 +394,7 @@ const Manageemployees = () => {
                       className="text-blue-500 hover:text-blue-700 mr-2"
                       onClick={() => handleEdit(item)}
                     >
-                      <FaEdit />
+                      <Edit2 />
                     </button>
                     <button
                       className="text-red-500 hover:text-red-700"
@@ -396,9 +408,9 @@ const Manageemployees = () => {
             </tbody>
           </table>
         </div>
-      </Layout>
-    </div>
+      </div>
+    </Layout>
   );
 };
 
-export default Manageemployees;
+export default ManageEmployees;
