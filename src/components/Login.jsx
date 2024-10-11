@@ -1,117 +1,157 @@
-import { useForm } from "react-hook-form";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { useState } from "react";
-import { useUser } from "../Contaxt/contaxt";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import { Cookies,useCookies} from "react-cookie";
-const Login = () => {
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { Eye, EyeOff } from 'lucide-react';
+import { useUser } from '../Contaxt/contaxt';
+import { useNavigate } from 'react-router-dom';
+import { useCookies } from 'react-cookie';
+import axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+export default function LoginForm() {
   const { register, handleSubmit } = useForm();
   const { setUser } = useUser();
-  const [toggle, setToggle] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
   const [cookies, setCookie] = useCookies(['user']);
-  const Toggle = () => {
-    setToggle(!toggle);
+
+  useEffect(() => {
+    if (cookies.user) {
+      const userRole = cookies.user.role;
+      if (userRole === 'admin') {
+        navigate('/admin');
+      } else if (userRole === 'employee') {
+        navigate('/employee');
+      }
+    }
+  }, [cookies, navigate]);
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const handleRememberMeChange = (e) => {
+    setRememberMe(e.target.checked);
   };
 
   const onSubmit = async (data) => {
     try {
-      const response = await axios.post("http://localhost:3001/user/login", data);
+      const response = await axios.post('http://localhost:3001/user/login', data);
   
       if (response.data) {
         setUser(response.data);
-        console.log("User:", response.data);
-        // Navigate based on user role using response.data directly
-        if (response.data.role === "admin") {
-          navigate("/admin");
-          setCookie('user', response.data, { path: '/' });
-        } else if (response.data.role === "employee") {
-          navigate("/employee");
+        toast.success('Login successful');
+  
+        if (response.data.role === 'admin') {
+          toast.success('Redirecting to admin dashboard');
+          navigate('/admin');
+        } else if (response.data.role === 'employee') {
+          toast.success('Redirecting to employee dashboard');
+          navigate('/employee');
+        }
+  
+        if (rememberMe) {
           setCookie('user', response.data, { path: '/' });
         }
       } else {
-        console.error("Login failed: No data returned");
+        toast.error('Login failed: No data returned');
       }
     } catch (error) {
-      console.error("Login failed:", error);
+      if (error.response && error.response.data && error.response.data.message) {
+        toast.error(`Login failed: ${error.response.data.message}`);
+      } else {
+        toast.error('Login failed: An unexpected error occurred');
+      }
     }
   };
 
   const handleLogout = () => {
     setUser(null);
-    navigate("/login");
+    navigate('/login');
   };
 
   return (
-    <div className="flex flex-col gap-6 items-center justify-center m-4 sm:m-10">
-      <div className="bg-blue-500 p-8 sm:px-10 sm:py-20 text-center  shadow-xl rounded-3xl w-full max-w-md">
-        <h1 className="font-bold text-2xl capitalize mb-8">Login Form</h1>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100 p-4">
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
+      <div className="w-full max-w-md">
         <form
-          className="bg-white text-black p-6 border-2 rounded-lg transition-all hover:shadow-2xl"
           onSubmit={handleSubmit(onSubmit)}
-          method="POST"
+          className="bg-white shadow-2xl rounded-2xl px-8 pt-8 pb-10"
         >
-          <div className="my-4 flex flex-col gap-3">
-            <label htmlFor="username" className="text-lg">
+          <h2 className="text-3xl font-bold text-center text-primary mb-8">Login</h2>
+          <div className="mb-6">
+            <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
               Username
             </label>
             <input
               id="username"
               type="text"
-              name="username"
+              {...register('username', { required: 'Username is required' })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary"
               placeholder="Enter your username"
-              className="w-full border border-slate-200  placeholder-white rounded-lg py-3 px-5 outline-none bg-transparent focus:shadow-xl focus:outline-dashed"
-              {...register("username", { required: "Username is required" })}
             />
           </div>
-          <div className="my-4 flex flex-col gap-3">
-            <label htmlFor="password" className="text-lg">
+          <div className="mb-6">
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
               Password
             </label>
             <div className="relative">
               <input
                 id="password"
-                type={toggle ? "password" : "text"}
-                name="password"
+                type={showPassword ? 'text' : 'password'}
+                {...register('password', { required: 'Password is required' })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary"
                 placeholder="Enter your password"
-                className="w-full border border-slate-200  placeholder-white rounded-lg py-3 px-5 outline-none bg-transparent transition-all focus:shadow-xl focus:outline-double"
-                {...register("password", { required: "Password is required" })}
               />
               <button
                 type="button"
-                className="absolute right-3 top-3 "
-                onClick={Toggle}
+                onClick={togglePasswordVisibility}
+                className="absolute inset-y-0 right-0 flex items-center pr-3"
               >
-                {toggle ? <FaEye /> : <FaEyeSlash />}
+                {showPassword ? (
+                  <EyeOff className="h-5 w-5 text-gray-400" />
+                ) : (
+                  <Eye className="h-5 w-5 text-gray-400" />
+                )}
               </button>
             </div>
           </div>
-          <div className="my-4 flex flex-col gap-3">
-            <label htmlFor="role" className="text-lg">
+          <div className="mb-6">
+            <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
               Role
             </label>
             <select
               id="role"
-              name="role"
-              className="w-full border border-slate-200 hover:text-white  bg-blue-500 rounded-lg py-3 px-5 outline-none hover:bg-blue-500 transition-all focus:shadow-xl focus:outline-dashed"
-              {...register("role", { required: "Role is required" })}
+              {...register('role', { required: 'Role is required' })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary"
             >
               <option value="admin">Admin</option>
               <option value="employee">Employee</option>
             </select>
           </div>
-          <div className="flex items-center justify-between gap-4 mt-6">
+          <div className="flex items-center mb-6">
+            <input
+              id="remember-me"
+              type="checkbox"
+              onChange={handleRememberMeChange}
+              className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+            />
+            <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
+              Remember me
+            </label>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-4">
             <button
               type="button"
-              className="flex-1 px-4 py-3 font-bold tracking-wide text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition-all"
               onClick={handleLogout}
+              className="w-full sm:w-1/2 bg-gray-200 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 text-white py-3 font-semibold tracking-wide  bg-blue-500 rounded-lg  hover:bg-blue-700 transition-all"
+              className="w-full sm:w-1/2 bg-primary bg-gray-700 text-white py-2 px-4 rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 transition-colors"
             >
               Login
             </button>
@@ -120,6 +160,4 @@ const Login = () => {
       </div>
     </div>
   );
-};
-
-export default Login;
+}
