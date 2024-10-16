@@ -82,6 +82,11 @@ export const EmployeesNavbar = [
 
     },
     {
+      "label": "Order Details",
+      "link": "/orderdetails",
+      "icon":FaUserCircle
+    },
+    {
       "label": "Manage Employees",
       "link": "/manageemployees",
       "icon":FaUsers
@@ -101,6 +106,7 @@ export const EmployeesNavbar = [
       "link": "/profile",
       "icon":FaUserCircle
     }
+    
   ];
   
   export const orderdetailsTable = [
