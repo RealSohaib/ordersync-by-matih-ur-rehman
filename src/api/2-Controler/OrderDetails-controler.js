@@ -51,4 +51,36 @@ const RemoveOrder = async (req, res) => {
     }
 };
 
-module.exports = { DisplayOrderDetails, PlaceOrder, RemoveOrder };
+const EditOrder = async (req, res) => {
+    const { _id, clientName, contact, items, instructions,delivery_status,payment_status} = req.body;
+    const totalitems = items.reduce((acc, item) => acc + item.total_items, 0);
+    const bill = items.reduce((acc, item) => acc + item.total_bill, 0);
+
+    try {
+        const updatedOrder = await OrderModel.findByIdAndUpdate(
+            _id,
+            {
+                clientName,
+                contact,
+                items,
+                instructions,
+                totalitems,
+                bill,
+                delivery_status,
+                payment_status
+            },
+            { new: true }
+        );
+        if (updatedOrder) {
+            res.status(200).send(updatedOrder);
+            console.log("Order updated successfully");
+        } else {
+            res.status(404).send({ message: 'Order not found' });
+        }
+    } catch (err) {
+        console.log(err);
+        res.status(500).send({ message: 'Internal Server Error' });
+    }
+};
+
+module.exports = { DisplayOrderDetails, PlaceOrder, RemoveOrder, EditOrder };
