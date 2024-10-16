@@ -1,7 +1,7 @@
 const express = require('express');
 const { DisplayOrderDetails, PlaceOrder } = require('../2-Controler/OrderDetails-controler');
 
-module.exports = function MenuView(app) {
+module.exports = function OrderView(app) {
     app.use(express.json()); // Use express.json() to parse incoming JSON
 
     // Route for displaying order details
