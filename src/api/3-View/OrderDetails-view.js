@@ -1,5 +1,5 @@
 const express = require('express');
-const { DisplayOrderDetails, PlaceOrder } = require('../2-Controler/OrderDetails-controler');
+const { DisplayOrderDetails, PlaceOrder,EditOrder,RemoveOrder } = require('../2-Controler/OrderDetails-controler');
 
 module.exports = function OrderView(app) {
     app.use(express.json()); // Use express.json() to parse incoming JSON
@@ -12,5 +12,10 @@ module.exports = function OrderView(app) {
     // Route for placing an order
     app.post("/orders", (req, res) => {
         PlaceOrder(req, res);
+    });
+    app.put("/orders/edit", (req, res) => {
+        EditOrder(req, res);
+    });    app.delete("/orders/remove", (req, res) => {
+        RemoveOrder(req, res);
     });
 };
