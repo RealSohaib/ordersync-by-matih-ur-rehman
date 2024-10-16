@@ -1,141 +1,142 @@
-const connection = require("../connection"); // Fix import for connection
 const mongoose = require("mongoose");
-// const autoIncrement = require('mongoose-auto-increment');
+const AutoIncrement = require('mongoose-sequence')(mongoose);
 
 // Schema for user
 const UserSchema = new mongoose.Schema({
     username: {
-        type: String,  // Corrected type
+        type: String,
         required: true
     },
     password: {
-        type: String,  // Corrected type
+        type: String,
         required: true
     },
     role: {
-        type: String,  // Corrected type
+        type: String,
         required: true
     },
     duty: {
-        type: String,  // Corrected type
-        default:["waiter","cashier"]
+        type: String,
+        default: ["waiter", "cashier"]
     },
     salary: {
-        type: Number,  // Corrected type
-        default:2300
+        type: Number,
+        default: 2300
     },
     joingindate: {
-        type: Date,  // Corrected type
-        default:Date()
+        type: Date,
+        default: Date()
     },
-},{timestamps:true});
+}, { timestamps: true });
 const UserModel = mongoose.model("user", UserSchema);
 
 // Schema for menu display
 const MenuSchema = new mongoose.Schema({
     name: {
-        type: String,  // Corrected type
+        type: String,
         required: true
     },
     price: {
-        type: Number,  // Corrected type
+        type: Number,
         required: true
     },
     image: {
-        type: String,  // Corrected type
+        type: String,
         required: true
     },
-    category: {  // Corrected typo in 'category'
-        type: String,  // Corrected type
+    category: {
+        type: String,
         required: true
     },
     description: {
-        type: String,  // Corrected type
+        type: String,
         required: true
     },
     stock: {
-        type: Number,  // Corrected type
+        type: Number,
         required: true,
-        default:0
+        default: 0
     }
 });
 const MenuModel = mongoose.model("menus", MenuSchema);
-// autoIncrement.initialize(connection);
-// Schema for orders
 
-const Ordermodle = new mongoose.Schema({
+const OrderSchema = new mongoose.Schema({
     name: {
-        type: String,  // Corrected type
+        type: String,
         required: true
     },
     contact: {
-        type: String,  // Corrected type
+        type: String,
         required: true
+    },
+    instructions: {
+        type: String
     },
     items: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'menu'  // Referencing the 'menu' model
+        ref: 'menus'
     }],
     total: {
-        type: Number,  // Corrected type
+        type: Number,
+        required: true
+    },
+    bill: {
+        type: Number,
         required: true
     },
     delivery_status: {
-        type: String,  // Corrected type
-        required: true,
+        type: String,
         default: "pending"
     },
     payment_status: {
-        type: String,  // Corrected type
-        required: true,
+        type: String,
         default: "pending"
     },
-    // oderid:{
-    //     type:Number,
-    //     unique: true 
-    // }
+    orderid: {
+        type: Number,
+        unique: true
+    }
 });
-// Ordermodle.plugin(autoIncrement.plugin, {
-//     model: 'Order',   // Model name
-//     field: 'orderid', // Field to auto-increment
-//     startAt: 1,       // Starting value
-//     incrementBy: 1    // Increment step
-// });
-const OrderScheema = mongoose.model("OrderDetails", Ordermodle);
 
-//system Prefernces like how many employees they hava what sender whatsapp number shold be
-//which should be the default message when we want to inform cliet the order is ready,
-// 
-const SystemPrefernces= mongoose.Schema({
-    OrderReadyToRecieve :{
-        type:String,
-        default:[
+// Plugin for auto-incrementing orderid
+OrderSchema.plugin(AutoIncrement, { 
+    id: 'order_seq', 
+    inc_field: 'orderid', 
+    start_seq: 1,
+    prefix: 'A'
+});
+
+const OrderModel = mongoose.model("OrderDetails", OrderSchema);
+
+// System Preferences schema
+const SystemPreferencesSchema = new mongoose.Schema({
+    OrderReadyToRecieve: {
+        type: String,
+        default: [
             "Your order is ready for pickup!",
             "Order is now complete and ready for delivery.",
             "Thank you! Your order is prepared and awaiting collection."
         ]
     },
-    RequestInventory :{
-        type:String,
-        default:[
+    RequestInventory: {
+        type: String,
+        default: [
             "Request for additional inventory has been sent.",
             "Please replenish the stock for the requested item.",
             "Inventory request submitted. Awaiting confirmation."
         ]
-
     },
-    TotalEmployees :{
-        type:Number,
-        required:true
+    TotalEmployees: {
+        type: Number,
+        required: true
     },
-    sender_whatsapp_number:{
-        type:String,
-        required:true,
-        default:"+1234567890"
+    sender_whatsapp_number: {
+        type: String,
+        required: true,
+        default: "+1234567890"
     }
- },{timestamps:true});
-const SystemModel=mongoose.model("SystemPrefernces",SystemPrefernces)
+}, { timestamps: true });
 
-module.exports = { UserModel, MenuModel, OrderScheema,SystemModel };
+const SystemModel = mongoose.model("SystemPreferences", SystemPreferencesSchema);
 
-connection();
+module.exports = { UserModel, MenuModel, OrderModel, SystemModel };
