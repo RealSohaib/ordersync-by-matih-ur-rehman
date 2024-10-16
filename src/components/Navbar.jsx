@@ -11,7 +11,7 @@ const Navbar = ({ children }) => {
   return (
     <>
       <div className="relative top-0 left-0 z-50 flex items-center p-4 bg-black text-white w-full md:hidden">
-        <button onClick={ToggleBtn} className="text-white text-2xl">
+        <button onClick={ToggleBtn} className="relative text-white text-2xl">
           {toggle ? <FaTimes /> : <FaBars />}
         </button>
       </div>
@@ -20,8 +20,8 @@ const Navbar = ({ children }) => {
           toggle ? "translate-x-0" : "-translate-x-full"
         } md:translate-x-0 md:relative md:w-64`}
       >
-        <div className="p-4 md:hidden">
-          <button onClick={ToggleBtn} className="text-white text-2xl">
+        <div className=" md:hidden">
+          <button onClick={ToggleBtn} className="relative text-white text-2xl">
             {toggle ? <FaTimes /> : <FaBars />}
           </button>
         </div>
