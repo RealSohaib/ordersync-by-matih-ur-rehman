@@ -1,36 +1,23 @@
-import React from 'react';
 import PropTypes from 'prop-types';
-
-export default function OrderCard({ className, image, name, category, price, description, children }) {
-  return (
-    <div className={`${className} transition-all hover:shadow-xl relative w-full max-w-xs mx-auto bg-white shadow-lg rounded-lg overflow-hidden flex flex-col min-w-[250px]`}> {/* Adjusted min-width */}
-      {/* Image */}
-      <img src={image || '../assets/bg-img.jpg'} alt={name || 'Default Name'} className="w-full h-40 object-cover" />
-      {/* Card Content */}
-      <div className="p-4 flex flex-col gap-2">
-        {/* Name */}
-        <h1 className="text-xl sm:text-2xl font-bold">{name || 'Default Name'}</h1>
-        {/* Category */}
-        <h2 className="text-lg sm:text-xl text-gray-600">{category || 'Default Category'}</h2>
-        {/* Description */}
-        <p className="text-base sm:text-lg text-gray-800">{description || 'Default Description'}</p>
-        {/* Price */}
-        <p className="text-xl sm:text-2xl font-semibold">{price || '$0.00'}</p>
-        {/* Action Buttons */}
-        <div className="flex flex-col gap-2">
-          {children}
-        </div>
-      </div>
+const Card = ({ image, name, category, descreption, price, children }) => (
+  <div className="bg-white rounded-lg shadow-md overflow-hidden">
+    <img src={image} alt={name} className="w-full h-48 object-cover" />
+    <div className="p-4">
+      <h3 className="text-lg font-semibold">{name}</h3>
+      <p className="text-sm text-gray-500">{category}</p>
+      <p className="mt-2 text-sm">{descreption}</p>
+      <p className="mt-2 text-lg font-bold">${price.toFixed(2)}</p>
+      <div className="mt-4 flex justify-between">{children}</div>
     </div>
-  );
-}
+  </div>
+);
 
-OrderCard.propTypes = {
-  className: PropTypes.string,
+Card.propTypes = {
   image: PropTypes.string,
-  name: PropTypes.string,
-  category: PropTypes.string,
-  price: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  description: PropTypes.string,
-  children: PropTypes.node,
+  name: PropTypes.string.isRequired,
+  category: PropTypes.string.isRequired,
+  descreption: PropTypes.string,
+  price: PropTypes.number.isRequired,
+  children: PropTypes.node.isRequired,
 };
+export default Card
