@@ -60,8 +60,9 @@ const MenuSchema = new mongoose.Schema({
 });
 const MenuModel = mongoose.model("menus", MenuSchema);
 
+// Schema for order details
 const OrderSchema = new mongoose.Schema({
-    name: {
+    clientName: {
         type: String,
         required: true
     },
@@ -73,10 +74,28 @@ const OrderSchema = new mongoose.Schema({
         type: String
     },
     items: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'menus'
+        name: {
+            type: String,
+            required: true
+        },
+        category: {
+            type: String,
+            required: true
+        },
+        price: {
+            type: Number,
+            required: true
+        },
+        total_items: {
+            type: Number,
+            required: true
+        },
+        total_bill: {
+            type: Number,
+            required: true
+        }
     }],
-    total: {
+    totalitems: {
         type: Number,
         required: true
     },
