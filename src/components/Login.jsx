@@ -10,20 +10,17 @@ import 'react-toastify/dist/ReactToastify.css';
 
 export default function LoginForm() {
   const { register, handleSubmit } = useForm();
-  const { setUser } = useUser();
+  const { user,setUser } = useUser();
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
-  const [cookies, setCookie] = useCookies(['user']);
+  const [cookies, setCookie] = useCookies(['admin', 'employee']);
 
   useEffect(() => {
-    if (cookies.user) {
-      const userRole = cookies.user.role;
-      if (userRole === 'admin') {
-        navigate('/admin');
-      } else if (userRole === 'employee') {
-        navigate('/employee');
-      }
+    if (cookies.admin) {
+      navigate('/admin');
+    } else if (cookies.employee) {
+      navigate('/employee');
     }
   }, [cookies, navigate]);
 
@@ -44,15 +41,13 @@ export default function LoginForm() {
         toast.success('Login successful');
   
         if (response.data.role === 'admin') {
-          toast.success('Redirecting to admin dashboard');
+          toast.success('Redirecting to admin dashboard',user);
+          setCookie('admin', response.data, { path: '/' });
           navigate('/admin');
         } else if (response.data.role === 'employee') {
-          toast.success('Redirecting to employee dashboard');
+          toast.success('Redirecting to employee dashboard',user);
+          setCookie('employee', response.data, { path: '/' });
           navigate('/employee');
-        }
-  
-        if (rememberMe) {
-          setCookie('user', response.data, { path: '/' });
         }
       } else {
         toast.error('Login failed: No data returned');
@@ -73,7 +68,7 @@ export default function LoginForm() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100 p-4">
-      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
+      <ToastContainer position="top-right" autoClose={1000} hideProgressBar={false} />
       <div className="w-full max-w-md">
         <form
           onSubmit={handleSubmit(onSubmit)}
