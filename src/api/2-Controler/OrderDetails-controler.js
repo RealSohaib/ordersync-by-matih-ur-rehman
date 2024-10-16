@@ -11,22 +11,30 @@ async function DisplayOrderDetails(req, res) {
     }
 }
 
-// const { OrderModel } = require("../1-Modle/modle.js");
-
 async function PlaceOrder(req, res) {
-    const { name, contact, items, total, delivery_status, payment_status, orderid } = req.body;
+    const { clientName, contact, items, instructions } = req.body;
+    const totalitems = items.reduce((acc, item) => acc + item.total_items, 0);
+    const bill = items.reduce((acc, item) => acc + item.total_bill, 0);
+
     try {
-        const newOrder = new OrderModel({ name, contact, items, total, delivery_status, payment_status, orderid });
+        const newOrder = new OrderModel({
+            clientName,
+            contact,
+            items,
+            instructions,
+            totalitems,
+            bill,
+            delivery_status: 'pending',
+            payment_status: 'pending'
+        });
         const result = await newOrder.save();
         res.status(201).send(result);
-        DisplayOrderDetails(req, res)
         console.log("Order placed successfully");
     } catch (err) {
         console.log(err);
         res.status(500).send({ message: 'Internal Server Error' });
     }
 }
-
 
 const RemoveOrder = async (req, res) => {
     const { orderid } = req.body;
