@@ -5,6 +5,7 @@ import { Cookies } from 'react-cookie';
 import { Edit2, LogOut, User } from 'lucide-react';
 import Layout from './Layout';
 import Modal from '../../components/Modle';
+import { FaTrash } from 'react-icons/fa';
 
 const url = "http://localhost:3001/user";
 
@@ -44,25 +45,15 @@ const ManageEmployees = () => {
     }
   }, [navigate, userCookie]);
 
-  const ConfirmDelete = () => {
-    if (users && users.username) {
-      axios.delete(`${url}/remove`, { data: { username: users.username } })
-        .then(() => {
-          window.confirm("Deleted successfully");
-          FetchData();
-          setToggler((prevState) => ({
-            ...prevState,
-            deleteConfirmation: false,
-          }));
-        })
-        .catch((err) => {
-          console.log("Error deleting user:", err);
-        });
-    } else {
-      console.log("Invalid user or missing username.");
-    }
+  const handleNewUser = () => {
+    axios.post(`${url}/adduser`, newuser)
+      .then(() => {
+        FetchData();
+        setToggler((prevState) => ({ ...prevState, createUser: false }));
+      })
+      .catch((err) => console.error('Error adding user:', err));
   };
-
+  
   const ConfirmEdit = () => {
     if (edit && edit._id) {
       axios.put(`${url}/update`, edit)
@@ -74,11 +65,26 @@ const ManageEmployees = () => {
             editUser: false,
           }));
         })
-        .catch((err) => {
-          console.log("Error editing user:", err);
-        });
+        .catch((err) => console.error('Error editing user:', err));
     } else {
       console.log("Invalid user or missing ID.");
+    }
+  };
+  
+  const ConfirmDelete = () => {
+    if (users && users.username) {
+      axios.delete(`${url}/remove`, { data: { username: users.username } })
+        .then(() => {
+          window.confirm("Deleted successfully");
+          FetchData();
+          setToggler((prevState) => ({
+            ...prevState,
+            deleteConfirmation: false,
+          }));
+        })
+        .catch((err) => console.error('Error deleting user:', err));
+    } else {
+      console.log("Invalid user or missing username.");
     }
   };
 
@@ -103,15 +109,7 @@ const ManageEmployees = () => {
     }
   };
 
-  const handleNewUser = () => {
-    axios.post(`${url}/adduser`, newuser)
-      .then((response) => {
-        FetchData();
-        setToggler((prevState) => ({ ...prevState, createUser: false }));
-      })
-      .catch((err) => console.error(err));
-  };
-
+  
   const duty = Employees ? [...new Set(Employees.map(item => item.duty))] : [];
 
   const removeCookies = () => {
@@ -164,7 +162,7 @@ const ManageEmployees = () => {
               <input
                 id="name"
                 type="text"
-                onChange={(e) => setNewUser({ ...newuser, name: e.target.value })}
+                onChange={(e) => setNewUser({ ...newuser, username: e.target.value })}
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Enter username"
               />
