@@ -21,17 +21,6 @@ export default function Index() {
   const [cookies, setCookie] = useCookies(['client']);
   const navigate = useNavigate();
 
-  const PlaceOrder = (item) => {
-    axios.post(`${API_URL}/order`, { item })
-      .then(() => {
-        // Handle successful order placement
-      })
-      .catch((err) => console.log(err));
-  };
-  const HandleStock=(item)=>{
-
-  }
-
   const FetchData = () => {
     axios.get(API_URL)
       .then((response) => {
@@ -140,8 +129,21 @@ export default function Index() {
 
   const handleContinue = () => {
     if (selectedItems.length > 0) {
-      setCookie('client', JSON.stringify({ clientName: userInfo.name, contact: userInfo.contact, items: selectedItems }), { path: '/' });
-      navigate("/resciept");
+      const orderData = {
+        clientName: userInfo.name,
+        contact: userInfo.contact,
+        items: selectedItems,
+        instructions: ''
+      };
+
+      axios.post(`${API_URL}/orders`, orderData)
+        .then((response) => {
+          setCookie('client', JSON.stringify(response.data), { path: '/' });
+          navigate("/resciept");
+        })
+        .catch((error) => {
+          console.error("Error placing order:", error);
+        });
     }
   };
 
