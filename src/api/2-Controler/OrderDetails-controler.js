@@ -10,7 +10,17 @@ async function DisplayOrderDetails(req, res) {
         res.status(500).send({ message: 'Internal Server Error' });
     }
 }
-
+async function FindOrder(req, res) {
+    const { orderid } = req.body;
+    try {
+        const data = await OrderModel.findOne({ orderid });
+        res.status(200).send(data);
+        console.log(data);
+    } catch (err) {
+        console.log(err);
+        res.status(500).send({ message: 'Internal Server Error' });
+    }
+}
 async function PlaceOrder(req, res) {
     const { clientName, contact, items, instructions } = req.body;
     const totalitems = items.reduce((acc, item) => acc + item.total_items, 0);
@@ -52,7 +62,7 @@ const RemoveOrder = async (req, res) => {
 };
 
 const EditOrder = async (req, res) => {
-    const { _id, clientName, contact, items, instructions,delivery_status,payment_status} = req.body;
+    const { _id, clientName, contact, items, instructions, delivery_status, payment_status } = req.body;
     const totalitems = items.reduce((acc, item) => acc + item.total_items, 0);
     const bill = items.reduce((acc, item) => acc + item.total_bill, 0);
 
@@ -83,4 +93,4 @@ const EditOrder = async (req, res) => {
     }
 };
 
-module.exports = { DisplayOrderDetails, PlaceOrder, RemoveOrder, EditOrder };
+module.exports = { DisplayOrderDetails, PlaceOrder, RemoveOrder, EditOrder,FindOrder };
