@@ -27,13 +27,8 @@ module.exports = function MenuView(app) {
     // Route for displaying menu
     app.get("/", (req, res) => {
         DisplayMenu(req, res);
-    });
-
-    // Route for displaying order details
-    app.get("/orderdetails", (req, res) => {
-        DisplayOrderDetails(req, res);
-    });
-
+    })
+    
     // Route for adding items with file upload
     app.post("/menu/additems", async (req, res) => {
         try {
