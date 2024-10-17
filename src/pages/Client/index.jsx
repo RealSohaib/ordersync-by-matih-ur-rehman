@@ -33,7 +33,7 @@ export default function Index() {
   };
 
   useEffect(() => {
-    document.title = "Client home screen";
+    document.title = "Home";
     FetchData();
   }, []);
 
@@ -112,10 +112,11 @@ export default function Index() {
 
   const OrderNowHandler = (item) => {
     OrderHandler(item);
+    setIsCartOpen(true)
   };
 
   const AddToCartHandler = (item) => {
-    OrderHandler(item);
+    OrderHandler(item)
   };
 
   const DeleteOrdeHandler = (item) => {

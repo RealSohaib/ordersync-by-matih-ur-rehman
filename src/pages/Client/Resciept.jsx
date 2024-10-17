@@ -1,15 +1,21 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import html2canvas from 'html2canvas';
 import { Camera, X, Plus, AlertTriangle } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { useCookies } from 'react-cookie';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import Timer from '../../components/Timer'; // Import the Timer component
+
+const apiurl = 'http://localhost:3001/orders';
+const menuapiurl = '/menu/edititem';
 
 const Receipt = () => {
   const [cookies, setCookie, removeCookie] = useCookies(['client']);
   const [order, setOrder] = useState(cookies.client || null);
   const [instructions, setInstructions] = useState(order?.instructions || '');
   const [isInstructionsModalOpen, setIsInstructionsModalOpen] = useState(false);
+  const [isCancelDisabled, setIsCancelDisabled] = useState(false); // State to manage button disable
   const receiptRef = useRef(null);
   const navigate = useNavigate();
 
@@ -17,7 +23,14 @@ const Receipt = () => {
     if (!order) {
       navigate('/');
     }
+    document.title = "OrderSync - Receipt";
+    console.log(order);
   }, [order, navigate]);
+
+  useEffect(() => {
+    // Clear the timer from local storage when the component mounts
+    localStorage.removeItem(`timer-${order.orderid}`);
+  }, [order.orderid]);
 
   const handleScreenshot = () => {
     Swal.fire({
@@ -30,7 +43,7 @@ const Receipt = () => {
           const screenshot = canvas.toDataURL('image/png');
           const link = document.createElement('a');
           link.href = screenshot;
-          link.download = `OrderSync_Receipt_${order.orderId}.png`;
+          link.download = `OrderSync_Receipt_${order.orderid}.png`;
           link.click();
         }).catch((error) => {
           console.error("Screenshot failed:", error);
@@ -45,15 +58,70 @@ const Receipt = () => {
   };
 
   const handleSaveInstructions = () => {
-    setOrder((prevOrder) => ({ ...prevOrder, instructions }));
-    setCookie('client', { ...order, instructions }, { path: '/' });
-    setIsInstructionsModalOpen(false);
+    if (instructions) {
+      const updatedOrder = { ...order, instructions };
+      axios.put(`${apiurl}/edit`, updatedOrder)
+        .then((response) => {
+          setOrder(response.data);
+          setCookie('client', response.data, { path: '/' });
+          setIsInstructionsModalOpen(false);
+          Swal.fire({
+            title: "Instructions Saved",
+            text: "Your instructions have been saved successfully.",
+            icon: "success",
+          });
+        })
+        .catch((error) => {
+          console.error("Error saving instructions:", error);
+          Swal.fire({
+            title: "Error",
+            text: "There was an error saving your instructions.",
+            icon: "error",
+          });
+        });
+    } else {
+      setIsInstructionsModalOpen(false);
+    }
   };
 
   const handleCancelOrder = () => {
-    removeCookie('client', { path: '/' });
-    setOrder(null);
-    navigate('/');
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!"
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const client = cookies.client;
+        const data = { orderid: client.orderid };
+        axios.delete(`${apiurl}/remove`, { data: data })
+          .then(() => {
+            Swal.fire({
+              title: "Deleted!",
+              text: "Your order has been deleted.",
+              icon: "success"
+            });
+            removeCookie('client', { path: '/' });
+            setOrder(null);
+            navigate('/');
+          })
+          .catch((err) => {
+            console.error('Error deleting order:', err);
+            Swal.fire({
+              title: "Error!",
+              text: "There was an error deleting your order.",
+              icon: "error"
+            });
+          });
+      }
+    });
+  };
+
+  const handleTimerEnd = () => {
+    setIsCancelDisabled(true);
   };
 
   if (!order) {
@@ -74,8 +142,12 @@ const Receipt = () => {
         <div ref={receiptRef} className="bg-white shadow-lg rounded-lg overflow-hidden">
           <div className="px-6 py-8">
             <h1 className="text-3xl font-bold text-center mb-6">Order Receipt</h1>
+            <div className="mt-4">
+              <span>You can cancel & add instructions before the timer ends</span>
+              <Timer min={0} sec={10} onTimerEnd={handleTimerEnd} orderId={order.orderid} />
+            </div>
             <div className="mb-6">
-              <h2 className="text-xl font-semibold">Order ID: {order.orderId}</h2>
+              <h2 className="text-xl font-semibold">Order ID: {order.orderid}</h2>
               <p className="text-gray-600">Date: {new Date().toLocaleDateString()}</p>
               <p className="text-gray-600">Customer: {order.clientName}</p>
             </div>
@@ -117,13 +189,15 @@ const Receipt = () => {
         <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
           <button
             onClick={handleCancelOrder}
-            className="w-full sm:w-auto px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-300 flex items-center justify-center"
+            className={`w-full sm:w-auto px-6 py-3 rounded-lg transition-colors duration-300 flex items-center justify-center ${isCancelDisabled ? 'bg-gray-400 cursor-not-allowed' : 'bg-red-500 text-white hover:bg-red-600'}`}
+            disabled={isCancelDisabled}
           >
-            <X className="mr-2" /> Cancel Order
+            <X className="mr-2" /> Cancel Order & Go Back
           </button>
           <button
             onClick={() => setIsInstructionsModalOpen(true)}
-            className="w-full sm:w-auto px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-300 flex items-center justify-center"
+            className={`w-full sm:w-auto px-6 py-3 rounded-lg transition-colors duration-300 flex items-center justify-center ${isCancelDisabled ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
+            disabled={isCancelDisabled}
           >
             <Plus className="mr-2" /> Add Instructions
           </button>
@@ -134,6 +208,7 @@ const Receipt = () => {
             <Camera className="mr-2" /> Place Order & Screenshot
           </button>
         </div>
+        
       </div>
 
       {isInstructionsModalOpen && (
