@@ -57,6 +57,10 @@ const MenuSchema = new mongoose.Schema({
         required: true,
         default: 0,
     }
+    ,Date:{
+        type: Date,
+        default: Date()
+    }
 });
 const MenuModel = mongoose.model("menus", MenuSchema);
 
