@@ -10,9 +10,9 @@ const Layout = ({ children }) => {
           <div
             key={index}
             className="text-white  hover:bg-gray-900 p-7 font-bold hover:border-l-4 transition-all hover:translate-x-2 flex"
-          >
+          >{item.icon}
             <Link to={item.link} className="">
-              {item.icon}{item.label}
+              {item.label}
             </Link>
           </div>
         ))}
