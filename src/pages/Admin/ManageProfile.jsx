@@ -1,38 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Cookies } from 'react-cookie';
 import { Edit2, LogOut, User, Eye, EyeOff } from 'lucide-react';
-import Layout from './Layout'
-
-const Modal = ({ isOpen, onClose, title, children, btnTitle, onClick }) => {
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
-        <div className="p-6">
-          <h2 className="text-2xl font-bold mb-4">{title}</h2>
-          {children}
-          <div className="mt-6 flex justify-end space-x-3">
-            <button
-              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
-              onClick={onClose}
-            >
-              Cancel
-            </button>
-            <button
-              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-              onClick={onClick}
-            >
-              {btnTitle}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
+import PropTypes from 'prop-types'; // Import PropTypes
+import Layout from './Layout';
+import Modal from '../../components/Modle';
 
 const UserProfile = ({ user, onEdit }) => (
   <div className="bg-white shadow rounded-lg p-6">
@@ -56,8 +29,14 @@ const UserProfile = ({ user, onEdit }) => (
   </div>
 );
 
+// Add prop types validation
+UserProfile.propTypes = {
+  user: PropTypes.shape(),
+  onEdit: PropTypes.func.isRequired,
+};
+
 export default function ManageProfile() {
-  const cookies = new Cookies();
+  const cookies = useMemo(() => new Cookies(), []); // Memoize cookies object
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [edit, setEdit] = useState({});
@@ -65,7 +44,7 @@ export default function ManageProfile() {
   const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
-    const userCookie = cookies.get('user');
+    const userCookie = cookies.get('admin');
     if (userCookie) {
       setUser(userCookie);
     } else {
@@ -74,7 +53,7 @@ export default function ManageProfile() {
   }, [navigate, cookies]);
 
   const handleLogout = () => {
-    cookies.remove('user');
+    cookies.remove('admin');
     navigate('/login');
   };
 
@@ -85,7 +64,7 @@ export default function ManageProfile() {
 
   const handleSaveChanges = async () => {
     try {
-      await axios.put(`${process.env.REACT_APP_API_URL}/changepassword/${user._id}`, edit);
+      await axios.put(`http://localhost:3001/users/changepassword/${user._id}`, edit);
       setUser((prevUser) => ({ ...prevUser, ...edit }));
       setIsEditModalOpen(false);
     } catch (err) {
@@ -127,7 +106,6 @@ export default function ManageProfile() {
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
           title="Edit User Credentials"
-          btnTitle="Save Changes"
           onClick={handleSaveChanges}
         >
           <div className="space-y-4">
@@ -177,6 +155,13 @@ export default function ManageProfile() {
               />
             </div>
           </div>
+          <button
+            className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+            onClick={handleSaveChanges}
+          >
+            Save Changes
+            <Edit2 className="ml-2" />
+          </button>
         </Modal>
       </div>
     </Layout>
