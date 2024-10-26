@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { ShoppingCart, Plus, Minus, X } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, X, User } from 'lucide-react';
 import { useCookies } from 'react-cookie';
 import { useNavigate } from 'react-router-dom';
 import Card from '../../components/Card';
-import Modal from '../../components/Modle';
+import Modal from '../../components/Modle'; // Corrected import
+import { Avatar } from '@mui/material'; // Import Avatar from MUI
 
 const API_URL = 'http://localhost:3001';
 
@@ -17,6 +18,7 @@ export default function Index() {
   const [isUserInfoOpen, setIsUserInfoOpen] = useState(true);
   const [userInfo, setUserInfo] = useState({ name: '', contact: '' });
   const [errors, setErrors] = useState({ name: '', contact: '' });
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false); // State for user menu
 
   const [cookies, setCookie] = useCookies(['client']);
   const navigate = useNavigate();
@@ -112,11 +114,11 @@ export default function Index() {
 
   const OrderNowHandler = (item) => {
     OrderHandler(item);
-    setIsCartOpen(true)
+    setIsCartOpen(true);
   };
 
   const AddToCartHandler = (item) => {
-    OrderHandler(item)
+    OrderHandler(item);
   };
 
   const DeleteOrdeHandler = (item) => {
@@ -173,22 +175,51 @@ export default function Index() {
     }
   };
 
+  const handleUserMenuToggle = () => {
+    setIsUserMenuOpen(!isUserMenuOpen);
+  };
+
+  const handleLogin = () => {
+    navigate('/login');
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
       <header className="bg-white shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-900">Restaurant Menu</h1>
-          <button 
-            onClick={() => setIsCartOpen(true)}
-            className="p-2 text-gray-500 hover:text-gray-700 relative"
-          >
-            <ShoppingCart size={24} />
-            {selectedItems.length > 0 && (
-              <span className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                {selectedItems.length}
-              </span>
-            )}
-          </button>
+          <div className="flex items-center space-x-4">
+            <button 
+              onClick={() => setIsCartOpen(true)}
+              className="p-2 text-gray-500 hover:text-gray-700 relative"
+            >
+              <ShoppingCart size={24} />
+              {selectedItems.length > 0 && (
+                <span className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                  {selectedItems.length}
+                </span>
+              )}
+            </button>
+            <div className="relative">
+              <Avatar
+                onClick={handleUserMenuToggle}
+                className="cursor-pointer"
+              >
+                <User size={24} />
+              </Avatar>
+              {isUserMenuOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-300 rounded-md shadow-lg py-2">
+                  <p className="px-4 py-2 text-gray-700">{userInfo.name || 'Guest'}</p>
+                  <button
+                    onClick={handleLogin}
+                    className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                  >
+                    Login
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </header>
 
