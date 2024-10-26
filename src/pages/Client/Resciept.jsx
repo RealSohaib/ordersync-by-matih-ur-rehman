@@ -8,7 +8,7 @@ import axios from 'axios';
 import Timer from '../../components/Timer'; // Import the Timer component
 
 const apiurl = 'http://localhost:3001/orders';
-const menuapiurl = '/menu/edititem';
+const menuapiurl = 'http://localhost:3001/menu/edititem';
 
 const Receipt = () => {
   const [cookies, setCookie, removeCookie] = useCookies(['client']);
@@ -32,6 +32,20 @@ const Receipt = () => {
     localStorage.removeItem(`timer-${order.orderid}`);
   }, [order.orderid]);
 
+  const updateStock = async (items, operation) => {
+    try {
+      const promises = items.map(async (item) => {
+        const response = await axios.get(`${menuapiurl}/${item.name}`);
+        const currentStock = response.data.stock;
+        const updatedStock = operation === 'deduct' ? currentStock - item.total_items : currentStock + item.total_items;
+        return axios.put(`${menuapiurl}`, { name: item.name, stock: updatedStock });
+      });
+      await Promise.all(promises);
+    } catch (error) {
+      console.error(`Error updating stock: ${error}`);
+    }
+  };
+
   const handleScreenshot = () => {
     Swal.fire({
       title: "Order Placed Successfully",
@@ -45,6 +59,7 @@ const Receipt = () => {
           link.href = screenshot;
           link.download = `OrderSync_Receipt_${order.orderid}.png`;
           link.click();
+          updateStock(order.items, 'deduct'); // Deduct stock when screenshot is taken
         }).catch((error) => {
           console.error("Screenshot failed:", error);
           Swal.fire({
@@ -104,6 +119,7 @@ const Receipt = () => {
               text: "Your order has been deleted.",
               icon: "success"
             });
+            updateStock(order.items, 'add'); // Re-add stock when order is canceled
             removeCookie('client', { path: '/' });
             setOrder(null);
             navigate('/');
@@ -174,7 +190,7 @@ const Receipt = () => {
             </div>
             <div className="mb-6">
               <h3 className="text-lg font-semibold mb-2">Order Status:</h3>
-              <p>Delivery: {order.delivery}</p>
+              <p>Delivery: {order.delivery_status}</p>
               <p>Payment: {order.payment_status}</p>
             </div>
             {instructions && (
@@ -236,6 +252,7 @@ const Receipt = () => {
                 Save
               </button>
             </div>
+            
           </div>
         </div>
       )}
