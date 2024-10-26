@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Cookies } from 'react-cookie';
@@ -6,13 +6,16 @@ import { Edit2, LogOut, User } from 'lucide-react';
 import Layout from './Layout';
 import Modal from '../../components/Modle';
 import { FaTrash } from 'react-icons/fa';
+import { toast } from 'react-toastify'; // Import toast
 
 const url = "http://localhost:3001/user";
 
 const ManageEmployees = () => {
   const cookies = new Cookies();
   const [users, setUsers] = useState([]);
-  const [Employees, setEmployees] = useState(null);
+  const [Employees, setEmployees] = useState([]);
+  const [filteredEmployees, setFilteredEmployees] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [edit, setEdit] = useState({});
   const [newuser, setNewUser] = useState({});
   const [toggler, setToggler] = useState({
@@ -25,13 +28,15 @@ const ManageEmployees = () => {
   });
 
   const navigate = useNavigate();
-  const userCookie = cookies.get('user');
+  const userCookie = cookies.get('admin');
 
-  const FetchData = () => {
+  const fetchData = () => {
     axios
       .get(`${url}`)
       .then((response) => {
-        setEmployees(response.data.filter((user) => user.role === "employee"));
+        const employees = response.data.filter((user) => user.role === "employee");
+        setEmployees(employees);
+        setFilteredEmployees(employees);
       })
       .catch((error) => {
         console.log("Error fetching data:", error);
@@ -39,50 +44,76 @@ const ManageEmployees = () => {
   };
 
   useEffect(() => {
-    FetchData();
+    fetchData();
     if (!userCookie) {
       navigate("/login");
     }
   }, [navigate, userCookie]);
 
+  const filterEmployees = useCallback(() => {
+    const filtered = Employees.filter(employee =>
+      employee.username.includes(searchQuery) ||
+      employee.duty.includes(searchQuery)
+    );
+    setFilteredEmployees(filtered);
+  }, [Employees, searchQuery]);
+
+  useEffect(() => {
+    filterEmployees();
+  }, [searchQuery, Employees, filterEmployees]);
+
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
   const handleNewUser = () => {
     axios.post(`${url}/adduser`, newuser)
       .then(() => {
-        FetchData();
+        fetchData();
         setToggler((prevState) => ({ ...prevState, createUser: false }));
+        toast.success('User added successfully');
       })
-      .catch((err) => console.error('Error adding user:', err));
+      .catch((err) => {
+        console.error('Error adding user:', err);
+        toast.error('Error adding user');
+      });
   };
-  
+
   const ConfirmEdit = () => {
     if (edit && edit._id) {
-      axios.put(`${url}/update`, edit)
+      axios.put(`${url}/edit`, edit)
         .then(() => {
-          window.confirm("Edited successfully");
-          FetchData();
+          fetchData();
           setToggler((prevState) => ({
             ...prevState,
             editUser: false,
           }));
+          toast.success('User edited successfully');
         })
-        .catch((err) => console.error('Error editing user:', err));
+        .catch((err) => {
+          console.error('Error editing user:', err);
+          toast.error('Error editing user');
+        });
     } else {
       console.log("Invalid user or missing ID.");
     }
   };
-  
+
   const ConfirmDelete = () => {
     if (users && users.username) {
       axios.delete(`${url}/remove`, { data: { username: users.username } })
         .then(() => {
-          window.confirm("Deleted successfully");
-          FetchData();
+          fetchData();
           setToggler((prevState) => ({
             ...prevState,
             deleteConfirmation: false,
           }));
+          toast.success('User deleted successfully');
         })
-        .catch((err) => console.error('Error deleting user:', err));
+        .catch((err) => {
+          console.error('Error deleting user:', err);
+          toast.error('Error deleting user');
+        });
     } else {
       console.log("Invalid user or missing username.");
     }
@@ -109,11 +140,10 @@ const ManageEmployees = () => {
     }
   };
 
-  
   const duty = Employees ? [...new Set(Employees.map(item => item.duty))] : [];
 
   const removeCookies = () => {
-    cookies.remove('user');
+    cookies.remove('admin');
     navigate("/login");
   };
 
@@ -142,6 +172,8 @@ const ManageEmployees = () => {
             <input
               type="text"
               placeholder="Search..."
+              value={searchQuery}
+              onChange={handleSearchChange}
               className="mt-4 w-full sm:w-64 px-4 py-2 rounded-lg border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
@@ -173,7 +205,7 @@ const ManageEmployees = () => {
               </label>
               <input
                 id="password"
-                type="password"
+                type="text"
                 onChange={(e) => setNewUser({ ...newuser, password: e.target.value })}
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Enter Password"
@@ -244,6 +276,7 @@ const ManageEmployees = () => {
                 placeholder="Enter Joining Date"
               />
             </div>
+            <button className="w-full inline-flex items-center justify-center px-8 py-4 font-sans font-semibold tracking-wide text-white bg-matte-red transition-all hover:bg-red-800 rounded-lg h-[60px]" onClick={handleNewUser}>Add</button>
           </div>
         </Modal>
 
@@ -251,18 +284,17 @@ const ManageEmployees = () => {
           isOpen={toggler.deleteConfirmation}
           onClose={() => setToggler((prevState) => ({ ...prevState, deleteConfirmation: false }))}
           title="Delete the following User?"
-          btnTitle="Delete"
-          onClick={ConfirmDelete}
         >
           <h1>{users ? users.username : null}</h1>
+          <button onClick={ConfirmDelete} className="w-full inline-flex items-center justify-center px-8 py-4 font-sans font-semibold tracking-wide text-white bg-matte-red transition-all hover:bg-red-800 rounded-lg h-[60px]">
+            Delete
+          </button>
         </Modal>
 
         <Modal
           isOpen={toggler.editUser}
           onClose={() => setToggler((prevState) => ({ ...prevState, editUser: false }))}
           title="Edit User"
-          btnTitle="Edit"
-          onClick={ConfirmEdit}
         >
           <div className="space-y-4">
             <div>
@@ -283,7 +315,7 @@ const ManageEmployees = () => {
               </label>
               <input
                 id="password"
-                type="password"
+                type="text"
                 value={edit.password || ""}
                 onChange={(e) => setEdit({ ...edit, password: e.target.value })}
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -359,6 +391,10 @@ const ManageEmployees = () => {
               />
             </div>
           </div>
+          <button className="w-full inline-flex items-center justify-center px-8 py-4 font-sans font-semibold tracking-wide text-white bg-matte-red transition-all hover:bg-red-800 rounded-lg h-[60px]" 
+            onClick={ConfirmEdit}>
+            Edit 
+          </button>
         </Modal>
 
         <div className="mt-6 overflow-x-auto">
@@ -375,7 +411,7 @@ const ManageEmployees = () => {
               </tr>
             </thead>
             <tbody>
-              {Employees?.map((item) => (
+              {filteredEmployees.map((item) => (
                 <tr key={item._id}>
                   <td className="py-2 px-4 border-b flex justify-center">
                     <User size={32} />
