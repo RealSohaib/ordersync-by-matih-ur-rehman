@@ -6,29 +6,32 @@ import Resciept from './pages/Client/Resciept';
 import Login from './components/Login';
 import Manageemployees from './pages/Admin/ManageEmployees';
 import ManageProfile from './pages/Admin/ManageProfile';
+import OrderDetials from './pages/Admin/orderDetails';
 import Error from './components/404';
 import { useCookies } from 'react-cookie';
 
 const App = () => {
-  const [cookies] = useCookies(['user', 'client']);
-  const user = cookies.user;
-
+  const [cookies] = useCookies(['admin','employee']);
+  const admin= cookies.admin;
+  const employee= cookies.employee;
+// console.log(user)
   return (
     <div>
       <Router>
         <Routes>
           <Route path="/" element={<Client />} />
           <Route path="/resciept" element={<Resciept />} />
-          {user && user.role === 'admin' ? (
+          {admin ? (
             <>
               <Route path="/admin" element={<AdminHome />} />
               <Route path="/manageemployees" element={<Manageemployees />} />
+              <Route path="/orderdetails" element={<OrderDetials />} />
               <Route path="/profile" element={<ManageProfile />} />
             </>
           ) : (
             <Route path="/login" element={<Login />} />
           )}
-          {user && user.role === 'employee' ? (
+          {employee  ? (
             <Route path="/employee" element={<EmployeeHome />} />
           ) : (
             <Route path="/login" element={<Login />} />
