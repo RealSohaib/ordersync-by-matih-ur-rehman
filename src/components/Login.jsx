@@ -38,8 +38,6 @@ export default function LoginForm() {
   
       if (response.data) {
         setUser(response.data);
-        toast.success('Login successful');
-  
         if (response.data.role === 'admin') {
           toast.success('Redirecting to admin dashboard',user);
           setCookie('admin', response.data, { path: '/' });
