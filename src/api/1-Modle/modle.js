@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 const AutoIncrement = require('mongoose-sequence')(mongoose);
 
 // Schema for user
@@ -13,11 +13,11 @@ const UserSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        required: true
+        default:"employee"
     },
     duty: {
-        type: String,
-        default: ["waiter", "cashier"]
+        type: [String],
+        default: ["cashier"]
     },
     salary: {
         type: Number,
@@ -25,7 +25,7 @@ const UserSchema = new mongoose.Schema({
     },
     joingindate: {
         type: Date,
-        default: Date()
+        default: Date.now
     },
 }, { timestamps: true });
 const UserModel = mongoose.model("user", UserSchema);
@@ -56,13 +56,43 @@ const MenuSchema = new mongoose.Schema({
         type: Number,
         required: true,
         default: 0,
+    },
+    orderCount: {
+        type: Number,
+        default: 0,
     }
-    ,Date:{
-        type: Date,
-        default: Date()
-    }
+    
 });
 const MenuModel = mongoose.model("menus", MenuSchema);
+const inventory = new mongoose.Schema({
+    name: {
+        type: String,
+        required: true
+    },
+    price: {
+        type: Number,
+        required: true
+    },
+    image: {
+        type: String,
+        required: true
+    },
+    category: {
+        type: String,
+        required: true
+    },
+    description: {
+        type: String,
+        required: true
+    },
+    stock: {
+        type: Number,
+        required: true,
+        default: 0,
+    }
+    
+});
+const inventorymodle = mongoose.model("inventory", inventory);
 
 // Schema for order details
 const OrderSchema = new mongoose.Schema({
@@ -118,6 +148,14 @@ const OrderSchema = new mongoose.Schema({
     orderid: {
         type: Number,
         unique: true
+    },
+    date: {
+        type: Date,
+        default: Date.now
+    },
+    feedback: {
+        type: String,
+        default: "fantastic"
     }
 });
 
@@ -134,7 +172,7 @@ const OrderModel = mongoose.model("OrderDetails", OrderSchema);
 // System Preferences schema
 const SystemPreferencesSchema = new mongoose.Schema({
     OrderReadyToRecieve: {
-        type: String,
+        type: [String],
         default: [
             "Your order is ready for pickup!",
             "Order is now complete and ready for delivery.",
@@ -142,7 +180,7 @@ const SystemPreferencesSchema = new mongoose.Schema({
         ]
     },
     RequestInventory: {
-        type: String,
+        type: [String],
         default: [
             "Request for additional inventory has been sent.",
             "Please replenish the stock for the requested item.",
@@ -162,4 +200,6 @@ const SystemPreferencesSchema = new mongoose.Schema({
 
 const SystemModel = mongoose.model("SystemPreferences", SystemPreferencesSchema);
 
-module.exports = { UserModel, MenuModel, OrderModel, SystemModel };
+module.exports = { UserModel, MenuModel, OrderModel, SystemModel,
+    inventorymodle
+ };
