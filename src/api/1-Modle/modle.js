@@ -5,7 +5,8 @@ const AutoIncrement = require('mongoose-sequence')(mongoose);
 const UserSchema = new mongoose.Schema({
     username: {
         type: String,
-        required: true
+        required: true,
+        // default:"default user"
     },
     password: {
         type: String,
@@ -23,9 +24,8 @@ const UserSchema = new mongoose.Schema({
         type: Number,
         default: 2300
     },
-    joingindate: {
+    joiningdate: {
         type: Date,
-        default: Date.now
     },
 }, { timestamps: true });
 const UserModel = mongoose.model("user", UserSchema);
@@ -92,17 +92,19 @@ const inventory = new mongoose.Schema({
     }
     
 });
-const inventorymodle = mongoose.model("inventory", inventory);
+const InventoryModle = mongoose.model("inventory", inventory);
 
 // Schema for order details
 const OrderSchema = new mongoose.Schema({
     clientName: {
         type: String,
-        required: true
+        required: true,
+        default:'default user'
     },
     contact: {
         type: String,
-        required: true
+        required: true,
+        
     },
     instructions: {
         type: String
@@ -201,5 +203,5 @@ const SystemPreferencesSchema = new mongoose.Schema({
 const SystemModel = mongoose.model("SystemPreferences", SystemPreferencesSchema);
 
 module.exports = { UserModel, MenuModel, OrderModel, SystemModel,
-    inventorymodle
+    InventoryModle
  };
