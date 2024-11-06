@@ -1,27 +1,24 @@
+import { useEffect } from 'react';
+import PropTypes from 'prop-types';
 import Navbar from '../../components/Navbar';
-import { Link } from "react-router-dom";
-import { AdminNavbar } from "../../constants";
 
 const Layout = ({ children }) => {
+  useEffect(() => {
+    document.title = "Admin Panel"; // Update the document title dynamically
+  }, []); // Add an empty dependency array to ensure this runs only once
+
   return (
-    <div className='flex w-screen capitalize'>
-      <Navbar>
-        {AdminNavbar.map((item, index) => (
-          <div
-            key={index}
-            className="text-white  hover:bg-gray-900 p-7 font-bold hover:border-l-4 transition-all hover:translate-x-2 flex"
-          >{item.icon}
-            <Link to={item.link} className="">
-              {item.label}
-            </Link>
-          </div>
-        ))}
-      </Navbar>
-      <div className='border-3 border-black w-screen flex flex-col'>
+    <div className='flex w-screen h-screen'>
+      <Navbar />
+      <div className='flex-1 p-4 overflow-auto'>
         {children}
       </div>
     </div>
   );
+};
+
+Layout.propTypes = {
+  children: PropTypes.node,
 };
 
 export default Layout;
