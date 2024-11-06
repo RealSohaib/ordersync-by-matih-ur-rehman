@@ -7,6 +7,8 @@ import Login from './components/Login';
 import Manageemployees from './pages/Admin/ManageEmployees';
 import ManageProfile from './pages/Admin/ManageProfile';
 import OrderDetials from './pages/Admin/orderDetails';
+// import OrderDetials from './pages/Admin';
+import ManageInventory from './pages/Admin/ManageInventory.jsx';
 import Error from './components/404';
 import { useCookies } from 'react-cookie';
 
@@ -27,6 +29,7 @@ const App = () => {
               <Route path="/manageemployees" element={<Manageemployees />} />
               <Route path="/orderdetails" element={<OrderDetials />} />
               <Route path="/profile" element={<ManageProfile />} />
+              <Route path="/manageinventory" element={<ManageInventory />} />
             </>
           ) : (
             <Route path="/login" element={<Login />} />
