@@ -8,14 +8,15 @@ import axios from 'axios';
 import Timer from '../../components/Timer'; // Import the Timer component
 
 const apiurl = 'http://localhost:3001/orders';
-const menuapiurl = 'http://localhost:3001/menu/edititem';
 
 const Receipt = () => {
   const [cookies, setCookie, removeCookie] = useCookies(['client']);
   const [order, setOrder] = useState(cookies.client || null);
   const [instructions, setInstructions] = useState(order?.instructions || '');
+  const [feedback, setFeedback] = useState(''); // State for feedback
   const [isInstructionsModalOpen, setIsInstructionsModalOpen] = useState(false);
   const [isCancelDisabled, setIsCancelDisabled] = useState(false); // State to manage button disable
+  const [paymenttoggler, setpaymenttoggler] = useState(false);
   const receiptRef = useRef(null);
   const navigate = useNavigate();
 
@@ -28,23 +29,11 @@ const Receipt = () => {
   }, [order, navigate]);
 
   useEffect(() => {
+    console.log(order.orderId);
+    
     // Clear the timer from local storage when the component mounts
     localStorage.removeItem(`timer-${order.orderid}`);
   }, [order.orderid]);
-
-  const updateStock = async (items, operation) => {
-    try {
-      const promises = items.map(async (item) => {
-        const response = await axios.get(`${menuapiurl}/${item.name}`);
-        const currentStock = response.data.stock;
-        const updatedStock = operation === 'deduct' ? currentStock - item.total_items : currentStock + item.total_items;
-        return axios.put(`${menuapiurl}`, { name: item.name, stock: updatedStock });
-      });
-      await Promise.all(promises);
-    } catch (error) {
-      console.error(`Error updating stock: ${error}`);
-    }
-  };
 
   const handleScreenshot = () => {
     Swal.fire({
@@ -59,7 +48,6 @@ const Receipt = () => {
           link.href = screenshot;
           link.download = `OrderSync_Receipt_${order.orderid}.png`;
           link.click();
-          updateStock(order.items, 'deduct'); // Deduct stock when screenshot is taken
         }).catch((error) => {
           console.error("Screenshot failed:", error);
           Swal.fire({
@@ -107,28 +95,26 @@ const Receipt = () => {
       showCancelButton: true,
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, delete it!"
+      confirmButtonText: "Yes, cancel it!"
     }).then((result) => {
       if (result.isConfirmed) {
-        const client = cookies.client;
-        const data = { orderid: client.orderid };
-        axios.delete(`${apiurl}/remove`, { data: data })
+        const updatedOrder = { ...order, delivery_status: 'Cancelled', payment_status: 'Cancelled', items: [] };
+        axios.put(`${apiurl}/edit`, updatedOrder)
           .then(() => {
             Swal.fire({
-              title: "Deleted!",
-              text: "Your order has been deleted.",
+              title: "Cancelled!",
+              text: "Your order has been cancelled.",
               icon: "success"
             });
-            updateStock(order.items, 'add'); // Re-add stock when order is canceled
-            removeCookie('client', { path: '/' });
-            setOrder(null);
-            navigate('/');
+            setOrder(updatedOrder);
+            removeCookie('client', { path: '/' }); // Remove order cookies
+            navigate('/'); // Redirect to the index page
           })
           .catch((err) => {
-            console.error('Error deleting order:', err);
+            console.error('Error cancelling order:', err);
             Swal.fire({
               title: "Error!",
-              text: "There was an error deleting your order.",
+              text: "There was an error cancelling your order.",
               icon: "error"
             });
           });
@@ -138,6 +124,30 @@ const Receipt = () => {
 
   const handleTimerEnd = () => {
     setIsCancelDisabled(true);
+  };
+
+  const handleSaveFeedback = () => {
+    if (feedback) {
+      const updatedOrder = { ...order, feedback: [...(order.feedback || []), feedback] };
+      axios.put(`${apiurl}/edit`, updatedOrder)
+        .then((response) => {
+          setOrder(response.data);
+          setFeedback('');
+          Swal.fire({
+            title: "Feedback Saved",
+            text: "Your feedback has been saved successfully.",
+            icon: "success",
+          });
+        })
+        .catch((error) => {
+          console.error("Error saving feedback:", error);
+          Swal.fire({
+            title: "Error",
+            text: "There was an error saving your feedback.",
+            icon: "error",
+          });
+        });
+    }
   };
 
   if (!order) {
@@ -160,7 +170,7 @@ const Receipt = () => {
             <h1 className="text-3xl font-bold text-center mb-6">Order Receipt</h1>
             <div className="mt-4">
               <span>You can cancel & add instructions before the timer ends</span>
-              <Timer min={0} sec={10} onTimerEnd={handleTimerEnd} orderId={order.orderid} />
+              <Timer min={0} sec={10} onTimerEnd={handleTimerEnd} orderId={order.orderid.toString()} />
             </div>
             <div className="mb-6">
               <h2 className="text-xl font-semibold">Order ID: {order.orderid}</h2>
@@ -223,8 +233,43 @@ const Receipt = () => {
           >
             <Camera className="mr-2" /> Place Order & Screenshot
           </button>
+          <button
+          onClick={()=>setpaymenttoggler(true)}
+          className="w-full sm:w-auto px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-300 flex items-center justify-center">
+            Pay bill Online
+          </button>
+          {paymenttoggler && (
+            <div className="w-full sm:w-auto px-6 py-3 bg-white rounded-lg shadow-md flex flex-col items-center justify-center">
+              <button
+                className="w-full sm:w-auto px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-300 flex items-center justify-center mb-4"
+              >
+                Easypaisa
+              </button>
+              <button
+                className="w-full sm:w-auto px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-300 flex items-center justify-center"
+              >
+                JazzCash
+              </button>
+            </div>
+          )}
         </div>
-        
+
+        <div className="mt-8">
+          <h3 className="text-lg font-semibold mb-2">Add Feedback:</h3>
+          <textarea
+            value={feedback}
+            onChange={(e) => setFeedback(e.target.value)}
+            className="w-full p-2 border rounded-lg mb-4"
+            rows="4"
+            placeholder="Enter your feedback..."
+          ></textarea>
+          <button
+            onClick={handleSaveFeedback}
+            className="w-full px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-300"
+          >
+            Save Feedback
+          </button>
+        </div>
       </div>
 
       {isInstructionsModalOpen && (
