@@ -98,7 +98,7 @@ export const EmployeesNavbar = [
     },
     {
       "label": "Inventory",
-      "link": "/admin/manageinventory",
+      "link": "/manageinventory",
       "icon":FaArchive
     },
     {
