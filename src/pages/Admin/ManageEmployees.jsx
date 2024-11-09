@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Cookies } from 'react-cookie';
 import { Edit2, LogOut, User } from 'lucide-react';
-import Layout from './Layout';
+import Layout from '../../components/Layout';
 import Modal from '../../components/Modle';
 import { FaTrash } from 'react-icons/fa';
 import { toast } from 'react-toastify'; // Import toast
@@ -48,7 +48,7 @@ const ManageEmployees = () => {
     if (!userCookie) {
       navigate("/login");
     }
-  }, [navigate, userCookie]);
+  }, [navigate, userCookie],400);
 
   const filterEmployees = useCallback(() => {
     const filtered = Employees.filter(employee =>
