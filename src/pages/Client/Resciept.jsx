@@ -5,6 +5,7 @@ import Swal from 'sweetalert2';
 import { useCookies } from 'react-cookie';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import Modle from './../../components/Modle.jsx';
 import Timer from '../../components/Timer'; // Import the Timer component
 
 const apiurl = 'http://localhost:3001/orders';
@@ -16,6 +17,7 @@ const Receipt = () => {
   const [feedback, setFeedback] = useState(''); // State for feedback
   const [isInstructionsModalOpen, setIsInstructionsModalOpen] = useState(false);
   const [isCancelDisabled, setIsCancelDisabled] = useState(false); // State to manage button disable
+  const [isLoading, setIsLoading] = useState(false); // State to manage loading
   const [paymenttoggler, setpaymenttoggler] = useState(false);
   const receiptRef = useRef(null);
   const navigate = useNavigate();
@@ -30,10 +32,48 @@ const Receipt = () => {
 
   useEffect(() => {
     console.log(order.orderId);
-    
     // Clear the timer from local storage when the component mounts
     localStorage.removeItem(`timer-${order.orderid}`);
   }, [order.orderid]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchOrderData(order);
+    }, 5000); // Poll every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [order]);
+
+  const fetchOrderData = (order) => {
+    setIsLoading(true); // Start loading
+    setTimeout(() => {
+      axios.get(`${apiurl}/search/${order.orderid}`)
+        .then((response) => {
+          const updatedOrder = response.data;
+          setOrder(updatedOrder);
+          setCookie('client', updatedOrder, { path: '/' });
+
+          if (updatedOrder.delivery_status === 'Completed') {
+            // Trigger buzzer or vibration
+            if (navigator.vibrate) {
+              navigator.vibrate([200, 100, 200]);
+            }
+            Swal.fire({
+              title: "Order Ready for Pickup",
+              text: "Your order is ready for pickup.",
+              icon: "success",
+            });
+            setIsCancelDisabled(true); // Disable cancel and add instruction buttons
+          }
+        })
+        .catch((error) => {
+          console.log("Error fetching order data:", error);
+        })
+        .finally(() => {
+          setIsLoading(false); // End loading
+        });
+    }, 3000); // 3-second loader
+  };
 
   const handleScreenshot = () => {
     Swal.fire({
@@ -92,14 +132,14 @@ const Receipt = () => {
       title: "Are you sure?",
       text: "You won't be able to revert this!",
       icon: "warning",
-      showCancelButton: true,
+      showCancelButton: true, 
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
       confirmButtonText: "Yes, cancel it!"
     }).then((result) => {
       if (result.isConfirmed) {
         const updatedOrder = { ...order, delivery_status: 'Cancelled', payment_status: 'Cancelled', items: [] };
-        axios.put(`${apiurl}/edit`, updatedOrder)
+        axios.put(`${apiurl}/status`, updatedOrder)
           .then(() => {
             Swal.fire({
               title: "Cancelled!",
@@ -128,8 +168,8 @@ const Receipt = () => {
 
   const handleSaveFeedback = () => {
     if (feedback) {
-      const updatedOrder = { ...order, feedback: [...(order.feedback || []), feedback] };
-      axios.put(`${apiurl}/edit`, updatedOrder)
+      const feedbackData = { _id: order._id, feedback: feedback };
+      axios.put(`${apiurl}/feedback`, feedbackData)
         .then((response) => {
           setOrder(response.data);
           setFeedback('');
@@ -238,8 +278,8 @@ const Receipt = () => {
           className="w-full sm:w-auto px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-300 flex items-center justify-center">
             Pay bill Online
           </button>
-          {paymenttoggler && (
-            <div className="w-full sm:w-auto px-6 py-3 bg-white rounded-lg shadow-md flex flex-col items-center justify-center">
+           <Modle>
+           <div className="w-full sm:w-auto px-6 py-3 bg-white rounded-lg shadow-md flex flex-col items-center justify-center">
               <button
                 className="w-full sm:w-auto px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-300 flex items-center justify-center mb-4"
               >
@@ -251,7 +291,7 @@ const Receipt = () => {
                 JazzCash
               </button>
             </div>
-          )}
+           </Modle>
         </div>
 
         <div className="mt-8">
