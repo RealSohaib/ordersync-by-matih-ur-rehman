@@ -157,7 +157,7 @@ const OrderSchema = new mongoose.Schema({
     },
     feedback: {
         type: String,
-        default: "fantastic"
+        default: "default feedback"
     }
 });
 
