@@ -21,7 +21,7 @@ module.exports = function UserView(app) {
     });
 
     // Route for changing password
-    app.put("/user/changepassword", (req, res) => {
+    app.put("/user/edit", (req, res) => {
         ChangeCredentials(req, res);
     });
     app.delete("/user/remove", (req, res) => {
