@@ -1,16 +1,17 @@
 const { OrderModel } = require("../1-Modle/modle.js");
 
-async function DisplayOrderDetails(req, res) {
+const DisplayOrderDetails = async (res) => {
     try {
         const data = await OrderModel.find();
         res.status(200).send(data);
-        console.log(data);
+        console.log("Order details displayed successfully");
     } catch (err) {
         console.log(err);
         res.status(500).send({ message: 'Internal Server Error' });
     }
-}
-async function FindOrder(req, res) {
+};
+
+const FindOrder = async (req, res) => {
     const { orderid } = req.body;
     try {
         const data = await OrderModel.findOne({ orderid });
@@ -20,12 +21,13 @@ async function FindOrder(req, res) {
         console.log(err);
         res.status(500).send({ message: 'Internal Server Error' });
     }
-}
-async function PlaceOrder(req, res) {
-    const { clientName, contact, items, instructions } = req.body;
+};
+
+const PlaceOrder = async (req, res) => {
+    const { clientName, contact, items, instructions,feedback } = req.body;
     const totalitems = items.reduce((acc, item) => acc + item.total_items, 0);
     const bill = items.reduce((acc, item) => acc + item.total_bill, 0);
-
+    // const rateing = 4; // Default rating value
     try {
         const newOrder = new OrderModel({
             clientName,
@@ -34,6 +36,8 @@ async function PlaceOrder(req, res) {
             instructions,
             totalitems,
             bill,
+            // rateing,
+            feedback,
             delivery_status: 'pending',
             payment_status: 'pending'
         });
@@ -44,7 +48,7 @@ async function PlaceOrder(req, res) {
         console.log(err);
         res.status(500).send({ message: 'Internal Server Error' });
     }
-}
+};
 
 const RemoveOrder = async (req, res) => {
     const { orderid } = req.body;
@@ -62,7 +66,7 @@ const RemoveOrder = async (req, res) => {
 };
 
 const EditOrder = async (req, res) => {
-    const { _id, clientName, contact, items, instructions, delivery_status, payment_status } = req.body;
+    const { _id, clientName, contact, items, instructions, delivery_status, payment_status, feedback } = req.body;
     const totalitems = items.reduce((acc, item) => acc + item.total_items, 0);
     const bill = items.reduce((acc, item) => acc + item.total_bill, 0);
 
@@ -77,7 +81,8 @@ const EditOrder = async (req, res) => {
                 totalitems,
                 bill,
                 delivery_status,
-                payment_status
+                payment_status,
+                feedback
             },
             { new: true }
         );
@@ -93,4 +98,105 @@ const EditOrder = async (req, res) => {
     }
 };
 
-module.exports = { DisplayOrderDetails, PlaceOrder, RemoveOrder, EditOrder,FindOrder };
+const OrderStatusHandler = async (req, res) => {
+    const { _id, delivery_status, payment_status } = req.body;
+
+    try {
+        const updatedOrder = await OrderModel.findByIdAndUpdate(
+            _id,
+            {
+                delivery_status,
+                payment_status,
+            },
+            { new: true }
+        );
+        if (updatedOrder) {
+            res.status(200).send(updatedOrder);
+            console.log("Order updated successfully");
+        } else {
+            res.status(404).send({ message: 'Order not found' });
+        }
+    } catch (err) {
+        console.log(err);
+        res.status(500).send({ message: 'Internal Server Error' });
+    }
+};
+
+const FeedBackHandler = async (req, res) => {
+    const { _id, orderCount } = req.body;
+
+    try {
+        const updatedOrder = await OrderModel.findByIdAndUpdate(
+            _id,
+            {
+                orderCount: orderCount
+            },
+            { new: true }
+        );
+        if (updatedOrder) {
+            res.status(200).send(updatedOrder);
+            console.log("Feedback updated successfully");
+        } else {
+            res.status(404).send({ message: 'Order not found' });
+        }
+    } catch (err) {
+        console.log(err);
+        res.status(500).send({ message: 'Internal Server Error' });
+    }
+};
+const OrderHandler = async (req, res) => {
+    const { _id, feedback } = req.body;
+
+    try {
+        const updatedOrder = await OrderModel.findByIdAndUpdate(
+            _id,
+            {
+                feedback: feedback
+            },
+            { new: true }
+        );
+        if (updatedOrder) {
+            res.status(200).send(updatedOrder);
+            console.log("Feedback updated successfully");
+        } else {
+            res.status(404).send({ message: 'Order not found' });
+        }
+    } catch (err) {
+        console.log(err);
+        res.status(500).send({ message: 'Internal Server Error' });
+    }
+};
+const StockHandler = async (req, res) => {
+    const { _id, stock } = req.body;
+
+    try {
+        const updatedOrder = await OrderModel.findByIdAndUpdate(
+            _id,
+            {
+                stock: stock
+            },
+            { new: true }
+        );
+        if (updatedOrder) {
+            res.status(200).send(updatedOrder);
+            console.log("Feedback updated successfully");
+        } else {
+            res.status(404).send({ message: 'Order not found' });
+        }
+    } catch (err) {
+        console.log(err);
+        res.status(500).send({ message: 'Internal Server Error' });
+    }
+};
+
+module.exports = { 
+    DisplayOrderDetails, 
+    FindOrder,
+    PlaceOrder,
+    RemoveOrder,
+    EditOrder,
+    OrderStatusHandler,
+    OrderHandler,
+    FeedBackHandler,
+    StockHandler
+};
