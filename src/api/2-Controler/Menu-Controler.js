@@ -1,9 +1,14 @@
-const { MenuModel,SystemModel } = require("../1-Modle/modle.js");
+const { MenuModel } = require("../1-Modle/modle.js");
 
 const CreateMenu = async function (req, res) {
-    const { name, price, image, category,stock, description } = req.body;
+    const { name, price, category, stock, description } = req.body;
+    const image = req.file ? req.file.path : null; // Get the file path if the file is uploaded
 
     try {
+        if (!name || !price || !category || !description || !stock || !image) {
+            return res.status(400).json({ message: 'All fields are required' });
+        }
+
         const menu = new MenuModel({
             name,
             price,
@@ -13,16 +18,18 @@ const CreateMenu = async function (req, res) {
             description
         });
 
+        console.log('Saving menu:', menu); // Log the menu data being saved
+
         const savedMenu = await menu.save();
 
         if (savedMenu) {
-            res.status(200).send(savedMenu);
+            res.status(200).json(savedMenu);
         } else {
-            res.status(401).send({ message: 'Failed to create menu' });
+            res.status(401).json({ message: 'Failed to create menu' });
         }
     } catch (err) {
-        console.log(err);
-        res.status(500).send({ message: 'Internal Server Error' });
+        console.error('Error in CreateMenu:', err);
+        res.status(500).json({ message: 'Internal Server Error' });
     }
 };
 
@@ -32,17 +39,17 @@ const DisplayMenu = async function (req, res) {
         res.status(200).json(data);
         console.log("Menu is displayed ");
     } catch (err) {
-        console.log(err);
-        res.status(500).send({ message: 'Internal Server Error' });
+        console.error('Error in DisplayMenu:', err);
+        res.status(500).json({ message: 'Internal Server Error' });
     }
 };
-        
+
 const EditMenu = async function (req, res) {
     const { _id, name, price, image, category, stock, description } = req.body;
     try {
         const data = await MenuModel.findOneAndUpdate(
-            { _id }, // Find the menu item by _id
-            { name, price, image, category,stock, description }, // Update the fields
+            { _id }, // Find the menu item by ID
+            { name, price, image, category, stock, description }, // Update fields
             { new: true } // Return the updated document
         );
 
@@ -50,11 +57,32 @@ const EditMenu = async function (req, res) {
             res.status(200).json(data);
             console.log(data);
         } else {
-            res.status(404).send({ message: 'Menu item not found' });
+            res.status(404).json({ message: 'Menu item not found' });
         }
     } catch (err) {
-        console.log(err);
-        res.status(500).send({ message: 'Internal Server Error' });
+        console.error('Error in EditMenu:', err);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+
+const HandleStocks = async function (req, res) {
+    const { _id, stock } = req.body;
+    try {
+        const data = await MenuModel.findOneAndUpdate(
+            { _id }, // Find the menu item by ID
+            { stock }, // Update the stock field
+            { new: true } // Return the updated document
+        );
+
+        if (data) {
+            res.status(200).json(data);
+            console.log(data);
+        } else {
+            res.status(404).json({ message: 'Menu item not found' });
+        }
+    } catch (err) {
+        console.error('Error in HandleStocks:', err);
+        res.status(500).json({ message: 'Internal Server Error' });
     }
 };
 
@@ -67,19 +95,18 @@ const DeleteMenu = async function (req, res) {
             res.status(200).json(data);
             console.log(data);
         } else {
-            res.status(404).send({ message: 'Menu item not found' });
+            res.status(404).json({ message: 'Menu item not found' });
         }
     } catch (err) {
-        console.log(err);
-        res.status(500).send({ message: 'Internal Server Error' });
+        console.error('Error in DeleteMenu:', err);
+        res.status(500).json({ message: 'Internal Server Error' });
     }
 };
-
-
 
 module.exports = {
     CreateMenu,
     DisplayMenu,
     EditMenu,
     DeleteMenu,
+    HandleStocks
 };
