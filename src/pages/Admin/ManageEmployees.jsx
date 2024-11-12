@@ -1,22 +1,23 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Cookies } from 'react-cookie';
 import { Edit2, LogOut, User } from 'lucide-react';
-import Layout from '../../components/Layout';
+import Layout from '../Admin/Layout';
 import Modal from '../../components/Modle';
 import { FaTrash } from 'react-icons/fa';
 import { toast } from 'react-toastify'; // Import toast
 
 const url = "http://localhost:3001/user";
-
 const ManageEmployees = () => {
-  const cookies = new Cookies();
+  const [duties, setDuties] = useState([]);
+  const cookies = useMemo(() => new Cookies(), []);
   const [users, setUsers] = useState([]);
   const [Employees, setEmployees] = useState([]);
   const [filteredEmployees, setFilteredEmployees] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [edit, setEdit] = useState({});
+  const [selectedDuty, setSelectedDuty] = useState('');
   const [newuser, setNewUser] = useState({});
   const [toggler, setToggler] = useState({
     editUser: false,
@@ -28,7 +29,6 @@ const ManageEmployees = () => {
   });
 
   const navigate = useNavigate();
-  const userCookie = cookies.get('admin');
 
   const fetchData = () => {
     axios
@@ -37,6 +37,8 @@ const ManageEmployees = () => {
         const employees = response.data.filter((user) => user.role === "employee");
         setEmployees(employees);
         setFilteredEmployees(employees);
+        const uniqueDuties = [...new Set(employees.map((employee) => employee.duty))];
+        setDuties(uniqueDuties);
       })
       .catch((error) => {
         console.log("Error fetching data:", error);
@@ -44,11 +46,13 @@ const ManageEmployees = () => {
   };
 
   useEffect(() => {
-    fetchData();
+    const userCookie = cookies.get('admin');
     if (!userCookie) {
-      navigate("/login");
+      navigate('/login');
+    } else {
+      fetchData();
     }
-  }, [navigate, userCookie],400);
+  }, [navigate, cookies]);
 
   const filterEmployees = useCallback(() => {
     const filtered = Employees.filter(employee =>
@@ -61,6 +65,14 @@ const ManageEmployees = () => {
   useEffect(() => {
     filterEmployees();
   }, [searchQuery, Employees, filterEmployees]);
+  const handleDutyChange = (e) => {
+    setSelectedDuty(e.target.value);
+    if (e.target.value === '') {
+      setFilteredEmployees(Employees);
+    } else {
+      setFilteredEmployees(Employees.filter(employee => employee.duty.includes(e.target.value)));
+    }
+  };
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
@@ -174,8 +186,22 @@ const ManageEmployees = () => {
               placeholder="Search..."
               value={searchQuery}
               onChange={handleSearchChange}
-              className="mt-4 w-full sm:w-64 px-4 py-2 rounded-lg border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="mt-4 w-full sm:w-64 px-4 py-2 rounded-lg border-2 border-gray-300 focus:outline-none focus:ring-2
+              items-center justify-center text-center
+              focus:ring-blue-500 focus:border-transparent"
             />
+                <select
+                value={selectedDuty}
+                onChange={handleDutyChange}
+                className="mt-4 md:mt-0 md:ml-4 w-full md:w-64 px-4 py-2 rounded-lg border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">All Duties</option>
+                {duties.map((duty, index) => (
+                  <option key={index} value={duty}>
+                    {duty}
+                  </option>
+                ))}
+              </select>
           </div>
         </div>
 
@@ -421,7 +447,7 @@ const ManageEmployees = () => {
                   <td className="py-2 px-4 border-b item-center">{item.duty}</td>
                   <td className="py-2 px-4 border-b item-center">{item.salary}</td>
                   <td className="py-2 px-4 border-b item-center justify-center">
-                    {item.joiningdate}
+                    {new Date(item.joiningdate).toLocaleDateString()}
                   </td>
                   <td className="py-2 px-4 border-b">
                     <button
