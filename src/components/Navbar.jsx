@@ -1,48 +1,71 @@
-import { useState } from "react";
-import { FaBars, FaTimes } from "react-icons/fa"; // Import icons for the toggle button
-import { Link } from "react-router-dom";
-import { AdminNavbar } from "../constants"; // Import AdminNavbar
+import { useState, useEffect } from "react";
+import PropTypes from 'prop-types';
+import { FaBars, FaTimes } from "react-icons/fa";
+const Navbar = ({ children }) => {
+  const [isOpen, setIsOpen] = useState(window.innerWidth >= 768);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
-const Navbar = () => {
-  const [toggle, setToggle] = useState(false);
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+      if (window.innerWidth >= 768) {
+        setIsOpen(true);
+      } else {
+        setIsOpen(false);
+      }
+    };
 
-  const ToggleBtn = () => {
-    setToggle(!toggle);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const toggleMenu = () => {
+    setIsOpen(!isOpen);
   };
+
+  useEffect(() => {
+    console.log("navItems in Navbar:"); // Debugging: Check if navItems are received correctly
+  }, []);
 
   return (
     <>
-      <div className="top-0 left-0 z-50 flex items-center p-4 bg-black text-white w-full md:hidden">
-        <button onClick={ToggleBtn} className="relative text-white text-2xl">
-          {toggle ? <FaTimes /> : <FaBars />}
-        </button>
-      </div>
-      <div
-        className={`stickey z-10 top-0 left-0 h-screen bg-black text-white transition-transform transform ${
-          toggle ? "translate-x-0" : "-translate-x-full"
-        } md:translate-x-0 md:relative md:w-64`}
-      >
-        <div className="md:hidden p-4">
-          <button onClick={ToggleBtn} className="relative text-white text-2xl">
-            {toggle ? <FaTimes /> : <FaBars />}
+      {isMobile && (
+        <div className="fixed top-0 left-0 z-50 flex items-center p-4 bg-matte-black text-white w-full">
+          <button onClick={toggleMenu} className="text-white text-2xl focus:outline-none">
+            {isOpen ? <FaTimes /> : <FaBars />}
           </button>
         </div>
+      )}
+      <div
+        className={`fixed z-40 top-0 left-0 h-screen bg-matte-black text-white w-64 transition-transform duration-300 ease-in-out transform ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        } ${isMobile ? "pt-16" : ""}`}
+      >
         <div className="p-4">
-          {AdminNavbar.map((item, index) => (
-            <Link
-              key={index}
-              to={item.link}
-              className="flex items-center p-4 text-white hover:bg-gray-900 hover:border-l-4 transition-all"
-              onClick={() => setToggle(false)} // Close the menu on link click
-            >
-              <item.icon className="mr-3" />
-              {item.label}
-            </Link>
-          ))}
+          <div className="mb-8">
+            <h1 className="text-2xl font-bold">Admin Panel</h1>
+          </div>
+          {children}
         </div>
       </div>
+      {isOpen && isMobile && (
+        <div
+          className="fixed inset-0 bg-black opacity-50 z-30"
+          onClick={() => setIsOpen(false)}
+        ></div>
+      )}
     </>
   );
+};
+
+Navbar.propTypes = {
+  navItems: PropTypes.arrayOf(
+    PropTypes.shape({
+      link: PropTypes.string.isRequired,
+      label: PropTypes.string.isRequired,
+      icon: PropTypes.elementType.isRequired,
+    })
+  ).isRequired,
 };
 
 export default Navbar;
