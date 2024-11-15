@@ -1,7 +1,11 @@
 import PropTypes from 'prop-types';
 const Card = ({ image, name, category, descreption, price, children }) => (
   <div className="bg-white rounded-lg shadow-md overflow-hidden">
-    <img src={image} alt={name} className="w-full h-48 object-cover" />
+    <img 
+      src={image} 
+      alt={name} 
+      className="w-full h-48 object-cover transition-transform duration-300 ease-in-out transform hover:scale-105" 
+    />
     <div className="p-4">
       <h3 className="text-lg font-semibold">{name}</h3>
       <p className="text-sm text-gray-500">{category}</p>
