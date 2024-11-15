@@ -1,5 +1,5 @@
 const express = require('express');
-const { DisplayMenu, EditMenu, DeleteMenu, CreateMenu, HandleStocks } = require('../2-Controler/Menu-Controler');
+const { DisplayMenu, EditMenu, DeleteMenu, CreateMenu, HandleStocks,OrderCountHandler } = require('../2-Controler/Menu-Controler');
 const multer = require('multer');
 const bodyParser = require('body-parser');
 const path = require('path');
@@ -8,10 +8,12 @@ module.exports = function MenuView(app) {
     // Set up Multer storage configuration
     const storage = multer.diskStorage({
         destination: function (req, file, cb) {
-            cb(null, path.join(__dirname, '../uploads')); // Specify the destination directory
+            cb(null, path.join(__dirname, '../../../public')); // Specify the destination directory
         },
         filename: function (req, file, cb) {
-            cb(null, Date.now() + '-' + file.originalname); // Specify the file name
+            const uniqueSuffix = Date.now();
+            const fileName = `${file.originalname}${uniqueSuffix}`;
+            cb(null, fileName); // Specify the file name
         }
     });
 
@@ -51,6 +53,9 @@ module.exports = function MenuView(app) {
     // Route for handling stocks
     app.put("/menu/stock", (req, res) => {
         HandleStocks(req, res);
+    });
+    app.put("/menu/orders", (req, res) => {
+        OrderCountHandler(req, res);
     });
     
     // Route for deleting items
