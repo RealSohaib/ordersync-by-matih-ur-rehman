@@ -39,7 +39,7 @@ const Receipt = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       fetchOrderData(order);
-    }, 5000); // Poll every 5 seconds
+    }, 500); // Poll every 5 seconds
 
     return () => clearInterval(interval);
   }, [order]);
@@ -72,7 +72,7 @@ const Receipt = () => {
         .finally(() => {
           setIsLoading(false); // End loading
         });
-    }, 3000); // 3-second loader
+    }, 300); // 3-second loader
   };
 
   const handleScreenshot = () => {
