@@ -93,7 +93,7 @@ export const EmployeesNavbar = [
     },
     {
       "label": "Accounts",
-      "link": "/Accounts",
+      "link": "/accounts",
       "icon":FaChartLine
     },
     {
@@ -314,9 +314,3 @@ const debitCreditTransactions = [
   { id: 2, date: '2024-05-31', description: 'Refund to customer', amount: -200 },
   // Add more debit/credit transactions as needed
 ];
-
-const accounts =[
-  { id: 1, username: 'admin', role: 'Admin', email: 'admin@example.com' },
-  { id: 2, username: 'employee1', role: 'Employee', email: 'employee1@example.com' },
-  { id: 3, username: 'employee2', role: 'Employee', email: 'employee2@example.com' },
-]
