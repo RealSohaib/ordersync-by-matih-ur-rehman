@@ -24,7 +24,7 @@ export default function Index() {
   const navigate = useNavigate();
 
   const FetchData = () => {
-    axios.get(API_URL)
+    axios.get(`${API_URL}/`)
       .then((response) => {
         setMenuContentState(response.data);
         setFilterMenu(response.data);
@@ -138,7 +138,7 @@ export default function Index() {
         items: selectedItems,
         instructions: ''
       };
-
+  
       axios.post(`${API_URL}/orders`, orderData)
         .then((response) => {
           setCookie('client', JSON.stringify(response.data), { path: '/' });
@@ -147,6 +147,8 @@ export default function Index() {
         .catch((error) => {
           console.error("Error placing order:", error);
         });
+    } else {
+      console.error("No items in the cart to place an order.");
     }
   };
 
@@ -224,14 +226,14 @@ export default function Index() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8 flex flex-col sm:flex-row gap-4">
-          <div className="flex-1">
+        <div className="mb-8 flex flex-col sm:flex-row gap-4 w-full">
+          <div className="flex-1 justify-center items-center text-center w-full ">
             <input
               type="text"
               placeholder="Search menu..."
               value={order.search}
               onChange={handleSearchChange}
-              className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
           <div>
@@ -258,19 +260,26 @@ export default function Index() {
               category={item.category}
               description={item.description}
               price={item.price}
-            >
-              <button
+            >{
+              item.stock > 0 ? (<>
+                  <button
                 onClick={() => AddToCartHandler(item)}
                 className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-              >
+                >
                 Add to Cart
               </button>
               <button
                 onClick={() => OrderNowHandler(item)}
                 className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors"
-              >
+                >
                 Order Now
               </button>
+                </>         
+              ) : (
+                <p className="text-red-500">Out of Stock</p>
+              )
+            }
+             
             </Card>
           ))}
         </div>
