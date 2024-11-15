@@ -1,6 +1,6 @@
-const { OrderModel } = require("../1-Modle/modle.js");
+const { OrderModel, ItemModel } = require("../1-Modle/modle.js");
 
-const DisplayOrderDetails = async (res) => {
+const DisplayOrderDetails = async (req, res) => {
     try {
         const data = await OrderModel.find();
         res.status(200).send(data);
@@ -12,9 +12,9 @@ const DisplayOrderDetails = async (res) => {
 };
 
 const FindOrder = async (req, res) => {
-    const { orderid } = req.body;
+    const { orderid, _id } = req.body;
     try {
-        const data = await OrderModel.findOne({ orderid });
+        const data = await OrderModel.findOne({ orderid, _id });
         res.status(200).send(data);
         console.log(data);
     } catch (err) {
@@ -24,10 +24,9 @@ const FindOrder = async (req, res) => {
 };
 
 const PlaceOrder = async (req, res) => {
-    const { clientName, contact, items, instructions,feedback } = req.body;
+    const { clientName, contact, items, instructions, feedback } = req.body;
     const totalitems = items.reduce((acc, item) => acc + item.total_items, 0);
     const bill = items.reduce((acc, item) => acc + item.total_bill, 0);
-    // const rateing = 4; // Default rating value
     try {
         const newOrder = new OrderModel({
             clientName,
@@ -36,7 +35,6 @@ const PlaceOrder = async (req, res) => {
             instructions,
             totalitems,
             bill,
-            // rateing,
             feedback,
             delivery_status: 'pending',
             payment_status: 'pending'
@@ -123,28 +121,6 @@ const OrderStatusHandler = async (req, res) => {
 };
 
 const FeedBackHandler = async (req, res) => {
-    const { _id, orderCount } = req.body;
-
-    try {
-        const updatedOrder = await OrderModel.findByIdAndUpdate(
-            _id,
-            {
-                orderCount: orderCount
-            },
-            { new: true }
-        );
-        if (updatedOrder) {
-            res.status(200).send(updatedOrder);
-            console.log("Feedback updated successfully");
-        } else {
-            res.status(404).send({ message: 'Order not found' });
-        }
-    } catch (err) {
-        console.log(err);
-        res.status(500).send({ message: 'Internal Server Error' });
-    }
-};
-const OrderHandler = async (req, res) => {
     const { _id, feedback } = req.body;
 
     try {
@@ -166,28 +142,31 @@ const OrderHandler = async (req, res) => {
         res.status(500).send({ message: 'Internal Server Error' });
     }
 };
+
 const StockHandler = async (req, res) => {
     const { _id, stock } = req.body;
 
     try {
-        const updatedOrder = await OrderModel.findByIdAndUpdate(
+        const updatedItem = await ItemModel.findByIdAndUpdate(
             _id,
             {
                 stock: stock
             },
             { new: true }
         );
-        if (updatedOrder) {
-            res.status(200).send(updatedOrder);
-            console.log("Feedback updated successfully");
+        if (updatedItem) {
+            res.status(200).send(updatedItem);
+            console.log("Stock updated successfully");
         } else {
-            res.status(404).send({ message: 'Order not found' });
+            res.status(404).send({ message: 'Item not found' });
         }
     } catch (err) {
         console.log(err);
         res.status(500).send({ message: 'Internal Server Error' });
     }
 };
+
+
 
 module.exports = { 
     DisplayOrderDetails, 
@@ -196,7 +175,7 @@ module.exports = {
     RemoveOrder,
     EditOrder,
     OrderStatusHandler,
-    OrderHandler,
     FeedBackHandler,
-    StockHandler
+    StockHandler,
+    // OrderCountHandler
 };
