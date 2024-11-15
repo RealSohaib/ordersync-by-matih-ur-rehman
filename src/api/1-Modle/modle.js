@@ -6,7 +6,6 @@ const UserSchema = new mongoose.Schema({
     username: {
         type: String,
         required: true,
-        // default:"default user"
     },
     password: {
         type: String,
@@ -14,11 +13,11 @@ const UserSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        default:"employee"
+        default: "employee"
     },
     duty: {
         type: [String],
-        default: ["cashier"]
+        default: "cashier"
     },
     salary: {
         type: Number,
@@ -26,6 +25,7 @@ const UserSchema = new mongoose.Schema({
     },
     joiningdate: {
         type: Date,
+        default: Date.now()
     },
 }, { timestamps: true });
 const UserModel = mongoose.model("user", UserSchema);
@@ -55,16 +55,17 @@ const MenuSchema = new mongoose.Schema({
     stock: {
         type: Number,
         required: true,
-        default: 0,
+        default: 1
     },
     orderCount: {
         type: Number,
-        default: 0,
+        default: 1,
     }
-    
 });
 const MenuModel = mongoose.model("menus", MenuSchema);
-const inventory = new mongoose.Schema({
+
+// Schema for inventory
+const InventorySchema = new mongoose.Schema({
     name: {
         type: String,
         required: true
@@ -90,21 +91,19 @@ const inventory = new mongoose.Schema({
         required: true,
         default: 0,
     }
-    
 });
-const InventoryModle = mongoose.model("inventory", inventory);
+const InventoryModle = mongoose.model("inventory", InventorySchema);
 
 // Schema for order details
 const OrderSchema = new mongoose.Schema({
     clientName: {
         type: String,
         required: true,
-        default:'default user'
+        default: 'default user'
     },
     contact: {
         type: String,
         required: true,
-        
     },
     instructions: {
         type: String
@@ -153,7 +152,7 @@ const OrderSchema = new mongoose.Schema({
     },
     date: {
         type: Date,
-        default: Date.now
+        default: Date.now()
     },
     feedback: {
         type: String,
@@ -162,9 +161,9 @@ const OrderSchema = new mongoose.Schema({
 });
 
 // Plugin for auto-incrementing orderid
-OrderSchema.plugin(AutoIncrement, { 
-    id: 'order_seq', 
-    inc_field: 'orderid', 
+OrderSchema.plugin(AutoIncrement, {
+    id: 'order_seq',
+    inc_field: 'orderid',
     start_seq: 1,
     prefix: 'A'
 });
@@ -202,6 +201,37 @@ const SystemPreferencesSchema = new mongoose.Schema({
 
 const SystemModel = mongoose.model("SystemPreferences", SystemPreferencesSchema);
 
-module.exports = { UserModel, MenuModel, OrderModel, SystemModel,
+// Schema for finances
+const FinanceSchema = new mongoose.Schema({
+    type: {
+        type: String,
+        enum: ['credit', 'debit'],
+        default: 'credit',
+    },
+    amount: {
+        type: Number,
+        required: true
+    },
+    date: {
+        type: Date,
+        default: Date.now()
+    },
+    purpose: {
+        type: String,
+        required: true
+    },
+    revenue: {
+        type: Number,
+        default: 0,
+    }
+});
+const FinanceModle = mongoose.model("FinanceDetail", FinanceSchema);
+
+module.exports = {
+    UserModel,
+    MenuModel,
+    OrderModel,
+    SystemModel,
+    FinanceModle,
     InventoryModle
- };
+};
