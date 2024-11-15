@@ -1,5 +1,5 @@
 const express = require('express');
-const { DisplayOrderDetails, FindOrder, PlaceOrder, RemoveOrder, EditOrder, OrderStatusHandler, FeedBackHandler } = require('../2-Controler/OrderDetails-controler.js');
+const { DisplayOrderDetails, FindOrder, PlaceOrder, RemoveOrder, EditOrder, OrderStatusHandler, FeedBackHandler, StockHandler, OrderCountHandler } = require('../2-Controler/OrderDetails-controler.js');
 
 module.exports = function OrderView(app) {
     app.use(express.json()); // Use express.json() to parse incoming JSON
@@ -27,6 +27,16 @@ module.exports = function OrderView(app) {
     // Route for updating order status
     app.put("/orders/status", (req, res) => {
         OrderStatusHandler(req, res);
+    });
+
+    // Route for updating stock
+    app.put("/orders/stocks", (req, res) => {
+        StockHandler(req, res);
+    });
+
+    // Route for updating order count
+    app.put("/orders/ordercount", (req, res) => {
+        OrderCountHandler(req, res);
     });
 
     // Route for adding feedback
