@@ -2,9 +2,11 @@ const { MenuModel } = require("../1-Modle/modle.js");
 
 const CreateMenu = async function (req, res) {
     const { name, price, category, stock, description } = req.body;
-    const image = req.file ? req.file.path : null; // Get the file path if the file is uploaded
+    const image = req.file ? req.file.filename: null; // Get the file path if the file is uploaded
 
     try {
+        //log the request body
+        console.log('Request received:', req.body);
         if (!name || !price || !category || !description || !stock || !image) {
             return res.status(400).json({ message: 'All fields are required' });
         }
@@ -66,6 +68,8 @@ const EditMenu = async function (req, res) {
 };
 
 const HandleStocks = async function (req, res) {
+    console.log('Request received:', req.body);
+    
     const { _id, stock } = req.body;
     try {
         const data = await MenuModel.findOneAndUpdate(
@@ -103,10 +107,34 @@ const DeleteMenu = async function (req, res) {
     }
 };
 
+const OrderCountHandler = async (req, res) => {
+    const { _id, orderCount } = req.body;
+
+    try {
+        const updatedItem = await MenuModel.findByIdAndUpdate(
+            _id,
+            {
+                orderCount: orderCount
+            },
+            { new: true }
+        );
+        if (updatedItem) {
+            res.status(200).send(updatedItem);
+            console.log("Order count updated successfully");
+        } else {
+            res.status(404).send({ message: 'Item not found' });
+        }
+    } catch (err) {
+        console.log(err);
+        res.status(500).send({ message: 'Internal Server Error' });
+    }
+};
+
 module.exports = {
     CreateMenu,
     DisplayMenu,
     EditMenu,
     DeleteMenu,
-    HandleStocks
+    HandleStocks,
+    OrderCountHandler
 };
