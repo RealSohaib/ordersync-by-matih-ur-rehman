@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-const Card = ({ image, name, category, descreption, price, children }) => (
+const Card = ({ image, name, category, descreption, price, children,order }) => (
   <div className="bg-white rounded-lg shadow-md overflow-hidden">
     <img 
       src={image} 
@@ -11,6 +11,7 @@ const Card = ({ image, name, category, descreption, price, children }) => (
       <p className="text-sm text-gray-500">{category}</p>
       <p className="mt-2 text-sm">{descreption}</p>
       <p className="mt-2 text-lg font-bold">${price.toFixed(2)}</p>
+      <p className="text-sm text-gray-500">{order}</p>
       <div className="mt-4 flex justify-between">{children}</div>
     </div>
   </div>
@@ -18,6 +19,7 @@ const Card = ({ image, name, category, descreption, price, children }) => (
 
 Card.propTypes = {
   image: PropTypes.string,
+  order: PropTypes.string,
   name: PropTypes.string.isRequired,
   category: PropTypes.string.isRequired,
   descreption: PropTypes.string,
