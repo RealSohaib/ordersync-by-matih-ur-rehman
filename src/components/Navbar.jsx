@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import PropTypes from 'prop-types';
 import { FaBars, FaTimes } from "react-icons/fa";
-const Navbar = ({ children }) => {
+const Navbar = ({ children,title}) => {
   const [isOpen, setIsOpen] = useState(window.innerWidth >= 768);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
@@ -43,7 +43,7 @@ const Navbar = ({ children }) => {
       >
         <div className="p-4">
           <div className="mb-8">
-            <h1 className="text-2xl font-bold">Admin Panel</h1>
+            <h1 className="text-2xl font-bold text-white">{title}</h1>
           </div>
           {children}
         </div>
@@ -59,6 +59,8 @@ const Navbar = ({ children }) => {
 };
 
 Navbar.propTypes = {
+  children: PropTypes.node.isRequired,
+  title: PropTypes.string.isRequired,
   navItems: PropTypes.arrayOf(
     PropTypes.shape({
       link: PropTypes.string.isRequired,
