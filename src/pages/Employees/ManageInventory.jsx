@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import Layout from '../Admin/Layout';
+import Layout from './Layout';
 import axios from "axios";
 import { LogOut } from 'lucide-react';
 import { FaEdit, FaTrash } from "react-icons/fa";
@@ -59,8 +59,8 @@ const ManageInventory = () => {
       .catch((error) => {
         console.log("Error fetching menu data:", error);
       });
-  }
-  
+  };
+
   const filterInventory = () => {
     const filtered = inventory.filter(item =>
       (selectedCategory === 'All' || item.category === selectedCategory) &&
@@ -427,7 +427,7 @@ const ManageInventory = () => {
           <tbody>
             {filteredInventory.map((item) => (
               <tr key={item._id}>
-                <td className="py-2 px-4 border-b"><Avatar alt="Remy Sharp" src={item.image ? `/${item.image}` : "../public/vite.svg"} /></td>
+                <td className="py-2 px-4 border-b"><Avatar alt="Remy Sharp" src={item.image ? `${imgPath}${item.image}` : "../public/vite.svg"} /></td>
                 <td className="py-2 px-4 border-b item-center justify-center">{item.name}</td>
                 <td className="py-2 px-4 border-b item-center justify-center">${item.price}</td>
                 <td className="py-2 px-4 border-b item-center justify-center">{item.category}</td>

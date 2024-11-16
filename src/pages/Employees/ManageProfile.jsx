@@ -4,7 +4,7 @@ import axios from 'axios';
 import { Cookies } from 'react-cookie';
 import { Edit2, LogOut, User, Eye, EyeOff } from 'lucide-react';
 import PropTypes from 'prop-types'; // Import PropTypes
-import Layout from '../Admin/Layout';
+import Layout from './Layout';
 import Modal from '../../components/Modle';
 
 const UserProfile = ({ user, onEdit }) => (

@@ -28,6 +28,7 @@ export default function Index() {
       .then((response) => {
         setMenuContentState(response.data);
         setFilterMenu(response.data);
+        console.log(response)
       })
       .catch((error) => {
         console.log("Error fetching menu data:", error);
@@ -260,6 +261,7 @@ export default function Index() {
               key={item.id || index}
               image={item.image}
               name={item.name}
+              order={item.orderCount}
               category={item.category}
               description={item.description}
               price={item.price}
@@ -379,8 +381,14 @@ export default function Index() {
             Save
           </button>
           <button
-            type="submit"
+          onClick={() => {
+            setUserInfo({
+              contact: "12345678901",
+              name: "employee"
+            });
+          }}
             className="w-full px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+            
             >
             GO default
           </button>

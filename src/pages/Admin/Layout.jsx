@@ -3,10 +3,8 @@ import PropTypes from 'prop-types';
 import Navbar from '../../components/Navbar.jsx';
 import { AdminNavbar } from '../../constants/index.jsx';
 import {Link} from 'react-router-dom'
-import { useState } from 'react';
 
 const Layout = ({ children }) => {
-  const [isOpen, setIsOpen] = useState(false);
   const isMobile = window.innerWidth <= 768;
   useEffect(() => {
     document.title = "Admin Panel";
@@ -18,7 +16,8 @@ const Layout = ({ children }) => {
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-gray-100">
-      <Navbar>
+      <Navbar
+      title="Employee panals">
       {AdminNavbar.map((item, index) => (
             <Link
               key={index}

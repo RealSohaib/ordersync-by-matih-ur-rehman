@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { Search, Edit, Trash, Printer } from 'lucide-react';
-import Layout from '../Admin/Layout';
+import Layout from './Layout';
 import Modal from '../../components/Modle';
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
@@ -129,7 +129,10 @@ const ManageAccounts = () => {
 
   const names = ['Credit', 'Debit'];
   const counts = [totalCredit, totalDebit];
-
+  //extract types from database 
+  
+  const types = financeTypes.map(financeType => financeType);
+const [addtypes,setaddtypes]=useState(false)
   return (
     <Layout>
       <div className="space-y-6">
@@ -219,12 +222,6 @@ const ManageAccounts = () => {
                           <Edit />
                         </button>
                         <button
-                          className="text-red-500 hover:text-red-700"
-                          onClick={() => handleDeleteFinance(finance._id)}
-                        >
-                          <Trash />
-                        </button>
-                        <button
                           className="text-green-500 hover:text-green-700 ml-2"
                           onClick={() => {
                             setPrintData(finance);
@@ -277,13 +274,29 @@ const ManageAccounts = () => {
             <label htmlFor="editType" className="block text-sm font-medium text-gray-700">
               Type
             </label>
-            <input
-              id="editType"
-              type="text"
-              value={editFinance?.type || ''}
-              onChange={(e) => setEditFinance({ ...editFinance, type: e.target.value })}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            />
+           
+            <select
+               value={editFinance?.type || ''}
+               onChange={(e) => setEditFinance({ ...editFinance, type: e.target.value })}
+               >
+              {types.map(type => (
+                <option key={type} value={type}>{type}</option>
+              ))}
+            </select>
+            <button onClick={()=>{
+              setaddtypes(!addtypes)
+            }}>
+              add 
+            </button>
+            {addtypes?
+               <input
+               id="editType"
+               type="text"
+               value={editFinance?.type || ''}
+               onChange={(e) => setEditFinance({ ...editFinance, type: e.target.value })}
+               className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+             />:null
+            }
           </div>
           <div>
             <label htmlFor="editAmount" className="block text-sm font-medium text-gray-700">

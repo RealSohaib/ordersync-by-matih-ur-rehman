@@ -257,6 +257,7 @@ export default function Index() {
               key={item.id || index}
               image={item.image}
               name={item.name}
+              order={item.orderCount}
               category={item.category}
               description={item.description}
               price={item.price}

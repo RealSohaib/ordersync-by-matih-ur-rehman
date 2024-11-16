@@ -6,8 +6,8 @@ import { FaEdit, FaTrash } from "react-icons/fa";
 import Modal from "../../components/Modle"; // Corrected import
 import { toast } from "react-toastify";
 import { useCookies } from 'react-cookie';
-import { Avatar } from "@mui/material";
 import { useNavigate } from 'react-router-dom';
+import { Avatar } from "@mui/material";
 import CustomPieChart from '../../components/PieChart'; // Ensure this path and component name are correct
 
 const Home = () => {
@@ -136,7 +136,16 @@ const Home = () => {
   const counts = menu.map((item) => item.stock);
   const order=menu.map((item)=>item.orderCount);
   const category=menu.map((item)=>item.category);
+  //for form validation
+  const validateName = (name) => {
+    const regex = /^[a-zA-Z\s]*$/;
+    return regex.test(name);
+  };
 
+  const validateNumber = (contact) => {
+    const regex = /^[0-9]*$/;
+    return regex.test(contact);
+  };
   // Count number of items with the same category
   const categoryCounts = menu.reduce((acc, item) => {
     acc[item.category] = (acc[item.category] || 0) + 1;
@@ -217,6 +226,7 @@ const Home = () => {
                 id="name"
                 name="name"
                 type="text"
+                onChange={(e)=>{validateNumber(e.target.value)}}
                 className="w-full p-4 bg-transparent border focus:shadow-lg focus:border-2 focus:border-blue-400 border-gray-200 rounded-lg outline-none"
                 placeholder="Enter your name"
               />
@@ -280,6 +290,8 @@ const Home = () => {
                 id="price"
                 name="price"
                 type="number"
+                onChange={(e)=>{validateNumber(e.target.value)}
+                }
                 className="focus:shadow-lg focus:border-2  focus:border-blue-400 p-4 bg-transparent border border-gray-200 rounded-lg outline-none"
                 placeholder="Enter price"
               />
@@ -372,7 +384,7 @@ const Home = () => {
               id="editStock"
               type="number"
               value={edit.stock}
-              onChange={(e) => setedit({ ...edit, stock: e.target.value })}
+              onChange={(e) => setedit(  validateNumber(e.target.value),{ ...edit, stock: e.target.value })}
               className="w-full p-4 bg-transparent border border-gray-200 rounded-lg outline-none"
               placeholder="Enter stock"
               />
