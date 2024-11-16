@@ -16,25 +16,25 @@ export const EmployeesNavbar = [
     },
     {"id":"2",
       "label": "Order Details",
-      "link": "/employee/orderdetails",
+      "link": "/orders",
       "icon":FaShoppingCart 
     },
     {
       "id":"3",
       "label": "Accounts History",
-      "link": "/employee/accountsdetails",
+      "link": "/accounts",
       "icon":FaHistory
     },
     {
       "id":"4",
       "label": "Inventory",
-      "link": "/employee/inventory",
+      "link": "/inventory",
       "icon":FaArchive
     },
     {
       "id":"5",
       "label": "Profile",
-      "link": "/employee/profile",
+      "link": "/profile",
       "icon":FaUser
     }
     
