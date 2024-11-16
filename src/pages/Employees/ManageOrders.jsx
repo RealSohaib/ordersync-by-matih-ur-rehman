@@ -500,8 +500,8 @@ const counts = [fulfilledCount, canceledCount, pendingCount];
                                 try {
                                    axios.put(`${API_URL}/status`, {
                                     _id: id,
-                                    delivery_status: 'cancelled',
-                                    payment_status: 'cancelled',
+                                    delivery_status: 'Cancelled',
+                                    payment_status: 'Cancelled',
                                   });
                                   toast.success('Order has been marked as completed');
                                   fetchData();
