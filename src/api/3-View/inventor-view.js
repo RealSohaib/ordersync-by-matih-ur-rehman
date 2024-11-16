@@ -1,5 +1,13 @@
 const express = require('express');
-const { DisplayMenu, EditMenu, DeleteMenu, CreateMenu, HandleStocks,OrderCountHandler } = require('../2-Controler/Inventory-controler');
+const {
+    
+    Createinventory,
+    Displayinventory,
+    Editinventory,
+    Deleteinventory,
+    HandleStocks,
+    OrderCountHandler
+ } = require('../2-Controler/Inventory-controler');
 const multer = require('multer');
 const bodyParser = require('body-parser');
 const path = require('path');
@@ -24,8 +32,9 @@ module.exports = function InventoryView(app) {
     app.use(bodyParser.json()); // Use bodyParser.json() to parse incoming JSON
 
     // Route for displaying inventory
-    app.get("/", (req, res) => {
-        DisplayMenu(req, res);
+    app.get("/inventory", (req, res) => {
+
+        Displayinventory(req, res);
     });
     
     // Route for adding items with file upload
