@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const path = require('path');
 
 module.exports = function MenuView(app) {
+    console.log("menu view is working")
     // Set up Multer storage configuration
     const storage = multer.diskStorage({
         destination: function (req, file, cb) {
