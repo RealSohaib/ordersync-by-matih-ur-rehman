@@ -11,12 +11,14 @@ const {
 const multer = require('multer');
 const bodyParser = require('body-parser');
 const path = require('path');
+const { log } = require('console');
 
 module.exports = function InventoryView(app) {
+    console.log("inventory view is working")
     // Set up Multer storage configuration
     const storage = multer.diskStorage({
         destination: function (req, file, cb) {
-            cb(null, path.join(__dirname, '../../../public')); // Specify the destination directory
+            cb(null, path.join(__dirname, '../../../public/inventory')); // Specify the destination directory
         },
         filename: function (req, file, cb) {
             const uniqueSuffix = Date.now();
@@ -47,7 +49,7 @@ module.exports = function InventoryView(app) {
                 return res.status(400).json({ error: 'File not uploaded' });
             }
             
-            await CreateMenu(req, res);
+            await Createinventory(req,res);
         } catch (error) {
             console.error('Error in /inventory/additems:', error);
             res.status(500).json({ error: 'Internal Server Error' });
@@ -56,7 +58,7 @@ module.exports = function InventoryView(app) {
 
     // Route for editing items
     app.put("/inventory/edititem", (req, res) => {
-        EditMenu(req, res);
+        Editinventory(req, res);
     });
 
     // Route for handling stocks
@@ -69,6 +71,6 @@ module.exports = function InventoryView(app) {
     
     // Route for deleting items
     app.delete("/inventory/deleteitem", (req, res) => {
-        DeleteMenu(req, res);
+        Deleteinventory(req, res);
     });
 };  
