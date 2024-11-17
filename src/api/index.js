@@ -4,7 +4,7 @@ const Userview = require("./3-View/User-view");
 const Menuview = require("./3-View/Menu-view");
 const OrderView = require("./3-View/OrderDetails-view");
 const FinanceView=require("./3-View/Finance-view")
-const Inventory=require("./3-View/inventor-view")
+const InventoryView=require("./3-View/inventor-view")
 const Connection =require('./connection');
 let port = 3001;
 
@@ -14,7 +14,7 @@ try{
     Menuview(app);
     OrderView(app);
     FinanceView(app)
-    Inventory(app)
+    InventoryView(app)
 
 }
 catch(err){
