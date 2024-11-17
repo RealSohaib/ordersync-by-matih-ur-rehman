@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { ShoppingCart, Plus, Minus, X, User } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, X, LogOut } from 'lucide-react';
 import { useCookies } from 'react-cookie';
 import { useNavigate } from 'react-router-dom';
 import Card from '../../components/Card';
-import Modal from '../../components/Modle'; // Corrected import
-import { Avatar } from '@mui/material'; // Import Avatar from MUI
+import Modal from '../../components/Modle'; // Corrected 
+
 import Layout from './Layout';
 const API_URL = 'http://localhost:3001';
 
@@ -15,13 +15,20 @@ export default function Index() {
   const [order, setOrder] = useState({ fitem: 'All', search: '' });
   const [selectedItems, setSelectedItems] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isRescieptOpen, setIsRescieptOpen] = useState(false);
   const [isUserInfoOpen, setIsUserInfoOpen] = useState(true);
   const [userInfo, setUserInfo] = useState({ name: '', contact: '' });
   const [errors, setErrors] = useState({ name: '', contact: '' });
-  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false); // State for user menu
+  // Removed unused state for user menu
+  const [isuserresciept, setIsUserresciept] = useState(false); // State for user menu
 
   const [cookies, setCookie] = useCookies(['client']);
   const navigate = useNavigate();
+
+  const removeCookies = () => {
+    setCookie('client', '', { path: '/', expires: new Date(0) });
+    navigate('/login');
+  };
 
   const FetchData = () => {
     axios.get(`${API_URL}/`)
@@ -38,12 +45,11 @@ export default function Index() {
   useEffect(() => {
     document.title = "Employee Home";
     FetchData();
+    console.log(FetchData());
   }, []);
 
   useEffect(() => {
-    if (cookies.client) {
-      navigate('/resciept');
-    }
+    // cookies.client?setIsRescieptOpen(true):null 
   }, [cookies, navigate]);
 
   const handleSearchChange = (e) => {
@@ -131,27 +137,27 @@ export default function Index() {
     return total;
   };
 
-  const handleContinue = () => {
-    if (selectedItems.length > 0) {
-      const orderData = {
-        clientName: userInfo.name,
-        contact: userInfo.contact,
-        items: selectedItems,
-        instructions: ''
-      };
-  
-      axios.post(`${API_URL}/orders`, orderData)
-        .then((response) => {
-          setCookie('client', JSON.stringify(response.data), { path: '/' });
-          navigate("/resciept");
-        })
-        .catch((error) => {
-          console.error("Error placing order:", error);
-        });
-    } else {
-      console.error("No items in the cart to place an order.");
-    }
-  };
+    const handleContinue = () => {
+      if (selectedItems.length > 0) {
+        const orderData = {
+          clientName: userInfo.name,
+          contact: userInfo.contact,
+          items: selectedItems,
+          instructions: ''
+        };
+        axios.post(`${API_URL}/orders`, orderData)
+          .then((response) => {
+            setCookie('client', JSON.stringify(response.data), { path: '/' });
+            setIsRescieptOpen(true);
+            setIsCartOpen(false)
+          })
+          .catch((error) => {
+            console.error("Error placing order:", error);
+          });
+      } else {
+        console.error("No items in the cart to place an order.");
+      }
+    };
 
   const validateName = (name) => {
     const regex = /^[a-zA-Z\s]*$/;
@@ -178,19 +184,10 @@ export default function Index() {
     }
   };
 
-  const handleUserMenuToggle = () => {
-    setIsUserMenuOpen(!isUserMenuOpen);
-  };
-
-  const handleLogin = () => {
-    navigate('/login');
-  };
-
   return (
     <div className="min-h-screen bg-gray-100">
       <Layout>
 
-      
       <header className="bg-white shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-900">Restaurant Menu</h1>
@@ -207,23 +204,13 @@ export default function Index() {
               )}
             </button>
             <div className="relative">
-              <Avatar
-                onClick={handleUserMenuToggle}
-                className="cursor-pointer"
-              >
-                <User size={24} />
-              </Avatar>
-              {isUserMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-300 rounded-md shadow-lg py-2">
-                  <p className="px-4 py-2 text-gray-700">{userInfo.name || 'Guest'}</p>
-                  <button
-                    onClick={handleLogin}
-                    className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
-                  >
-                    Login
-                  </button>
-                </div>
-              )}
+            <button
+          onClick={removeCookies}
+          className="flex items-center space-x-2 px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+        >
+          <LogOut size={20} />
+          <span>Logout</span>
+        </button>
             </div>
           </div>
         </div>
@@ -384,7 +371,7 @@ export default function Index() {
           onClick={() => {
             setUserInfo({
               contact: "12345678901",
-              name: "employee"
+              name: "palced by employee"
             });
           }}
             className="w-full px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
@@ -395,6 +382,51 @@ export default function Index() {
             </div>
         </form>
       </Modal>
+      <Modal
+    // setIsUserresciep
+    closable={true}
+    isOpen={isuserresciept}
+    onClose={() => setIsUserresciept(false)}
+    title="Your Receipt"
+    >
+
+      </Modal>
+    <Modal 
+    isOpen={isRescieptOpen}
+    onClose={() => setIsRescieptOpen(false)}
+    title="Your Receipt"
+    closable={true}
+    >
+      <div className="w-full flex flex-col items-center">
+        <h1 className="text-xl font-bold mb-4">Receipt</h1>
+        <p className="mb-4">Thank you for your order</p>
+        <div className=" sm:grid-cols-2 gap-6">
+        <div>
+            <h2 className="font-semibold mb-2">Client Information</h2>
+            <p className="mb-1">Name: {userInfo.name}</p>
+            <p>Contact: {userInfo.contact}</p>
+          </div>
+          <div>
+            <h2 className="font-semibold mb-2">Order Details</h2>
+            <ul className="list-disc pl-5">
+              {selectedItems.map((item, index) => (
+                <li key={index} className="mb-2">
+                  <span className="block">{item.name}</span>
+                  <span className="block">{item.total_items} x ${item.price.toFixed(2)}</span>
+                  <span className="block">total bill:{item.total_bill.toFixed(2)}</span>
+                </li>
+              ))}
+            </ul>
+            <button className='w-full bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors' onClick={()=>{
+              window.print()
+            }}>
+              Print
+            </button>
+          </div>
+          
+        </div>
+      </div>
+    </Modal>
     </Layout>
     </div>
   );
