@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { Search, Edit, Trash, Printer } from 'lucide-react';
 import Layout from '../Admin/Layout';
@@ -15,29 +15,33 @@ const ManageAccounts = () => {
   const [filterType, setFilterType] = useState('All');
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [editFinance, setEditFinance] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const [printData, setPrintData] = useState(null);
+  const [isaddModalOpen, setisaddModalOpen] = useState(false);
+  const [newFinances, setNewFinances] = useState({
+    amount: 0,
+    type: 'credit',
+    date: new Date().toISOString().split('T')[0],
+    purpose: '',
+    revenue: 0,
+  });
 
   const fetchData = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
     try {
       const response = await axios.get(API_URL);
       setFinances(response.data);
     } catch (error) {
       console.error('Error fetching finances:', error);
-      setError('Failed to fetch finances. Please try again.');
-    } finally {
-      setIsLoading(false);
+      toast.error('Failed to fetch finances. Please try again.');
     }
   }, []);
 
   useEffect(() => {
     fetchData();
+    const interval = setInterval(fetchData, 60000); // fetch data every 60 seconds
+    return () => clearInterval(interval); // cleanup on unmount
   }, [fetchData]);
 
   const handleSearch = (e) => {
@@ -69,7 +73,7 @@ const ManageAccounts = () => {
   const handleDeleteFinance = async (finance) => {
     Swal.fire({
       title: 'Are you sure?',
-      text: `You are about to delete finance ID: ${finance}`,
+      text: `You are about to delete finance: ${finance.purpose}`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
@@ -78,7 +82,7 @@ const ManageAccounts = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`${API_URL}/delete`, { data: { _id: financeId } });
+          await axios.delete(`${API_URL}/delete`, { data: { _id: finance._id } });
           fetchData();
           toast.success('Finance deleted successfully');
         } catch (error) {
@@ -103,6 +107,23 @@ const ManageAccounts = () => {
     }
   };
 
+  const handleAddFinance = async (e) => {
+    e.preventDefault();
+    if (newFinances.amount < 0) {
+      toast.error('Amount cannot be negative');
+      return;
+    }
+    try {
+      await axios.post(`${API_URL}/add`, newFinances);
+      toast.success(`Finance added successfully as ${newFinances.type}`);
+      fetchData();
+      setisaddModalOpen(false);
+    } catch (error) {
+      console.error('Error adding finance:', error);
+      toast.error('Error adding finance');
+    }
+  };
+
   const filteredFinances = finances.filter((finance) => {
     const matchesSearchTerm =
       finance.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -118,7 +139,7 @@ const ManageAccounts = () => {
     currentPage * rowsPerPage
   );
 
-  const financeTypes = ['All', ...new Set(finances.map((item) => item.type))];
+  const financeTypes = [...new Set(finances.map((item) => item.type))];
 
   const totalCredit = finances
     .filter((finance) => finance.type === 'credit')
@@ -127,15 +148,25 @@ const ManageAccounts = () => {
     .filter((finance) => finance.type === 'debit')
     .reduce((acc, finance) => acc + finance.amount, 0);
 
-  const names = ['Credit', 'Debit'];
-  const counts = [totalCredit, totalDebit];
+  const totalRevenue = totalCredit - totalDebit;
+  const names = ['Credit', 'Debit', 'Revenue'];
+  const counts = [totalCredit, totalDebit, totalRevenue];
 
   return (
     <Layout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold text-gray-900">Manage Accounts</h1>
+          <button className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-700">
+            logout
+          </button>
         </div>
+        <button
+          onClick={() => setisaddModalOpen(true)}
+          className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-700"
+        >
+          Add Finance
+        </button>
 
         <div className="bg-white shadow rounded-lg overflow-hidden">
           <div className="p-6">
@@ -152,23 +183,7 @@ const ManageAccounts = () => {
                   <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
                 </div>
               </div>
-              <div className="flex items-center">
-                <label htmlFor="filterType" className="mr-2 text-sm">
-                  Filter:
-                </label>
-                <select
-                  id="filterType"
-                  value={filterType}
-                  onChange={handleFilterChange}
-                  className="px-2 py-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  {financeTypes.map((type, index) => (
-                    <option key={index} value={type}>
-                      {type}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              
               <div className="flex items-center">
                 <label htmlFor="rowsPerPage" className="mr-2 text-sm">
                   Show:
@@ -190,7 +205,23 @@ const ManageAccounts = () => {
             <div className="my-4">
               <CustomPieChart names={names} counts={counts} />
             </div>
-
+<div className="flex items-center">
+                <label htmlFor="filterType" className="mr-2 text-sm">
+                  Filter:
+                </label>
+                <select
+                  id="filterType"
+                  value={filterType}
+                  onChange={handleFilterChange}
+                  className="px-2 py-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  {financeTypes.map((type, index) => (
+                    <option key={index} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </select>
+              </div>
             <div className="overflow-x-auto">
               <table className="min-w-full bg-white">
                 <thead>
@@ -220,7 +251,7 @@ const ManageAccounts = () => {
                         </button>
                         <button
                           className="text-red-500 hover:text-red-700"
-                          onClick={() => handleDeleteFinance(finance._id)}
+                          onClick={() => handleDeleteFinance(finance)}
                         >
                           <Trash />
                         </button>
@@ -361,6 +392,51 @@ const ManageAccounts = () => {
             Print
           </button>
         </div>
+      </Modal>
+      <Modal
+      isOpen={isaddModalOpen}
+      onClose={() => setisaddModalOpen(false)}
+      title="Add Finance"
+      >
+        <form onSubmit={handleAddFinance}>
+          <div className='flex flex-col  items-start gap-y-3'>
+            <div className='w-full flex justify-between'>
+              <label htmlFor="type">Type</label>
+              <select
+                onChange={(e) => {
+                  setNewFinances({ ...newFinances, type: e.target.value })
+                }}
+                className="px-2 py-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {financeTypes.map((type, index) => (
+                  <option key={index} value={type}>{type}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className='w-full flex justify-between'>
+            <label htmlFor="amount">Amount</label>
+            <input type="number"
+              className="p-4 bg-transparent border focus:shadow-lg focus:border-2 focus:border-blue-400 border-gray-200 rounded-lg outline-none"
+              onChange={(e) => {
+                setNewFinances({ ...newFinances, amount: e.target.value })
+              }}
+            />
+          </div>
+          <div className='w-full flex justify-between'>
+            <label htmlFor="purpose">Purpose</label>
+            <input type="text"
+              onChange={(e) => {
+                setNewFinances({ ...newFinances, purpose: e.target.value })
+              }}
+              className="p-4 bg-transparent border focus:shadow-lg focus:border-2 focus:border-blue-400 border-gray-200 rounded-lg outline-none" />
+          </div>
+          <div className='w-full flex justify-end'>
+            <button type="submit" className="w-full px-4 py-2 text-sm font-medium tracking-wide text-white bg-matte-red rounded-md hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              Add Finance
+            </button>
+          </div>
+        </form>
       </Modal>
     </Layout>
   );
