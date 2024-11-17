@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Layout from '../Admin/Layout';
 import axios from "axios";
 import { LogOut } from 'lucide-react';
@@ -25,7 +25,6 @@ const ManageInventory = () => {
     categoryToggler: false,
   });
   const url = "http://localhost:3001";
-  const imgPath = "../../api/uploads/";
   const [newInventory, setNewInventory] = useState({});
   const [edit, setEdit] = useState({});
 
@@ -51,17 +50,16 @@ const ManageInventory = () => {
   };
 
   const fetchMenuData = () => {
-    axios
-      .get(`${url}menu`)
+    axios.get(`${url}/menu`)
       .then((response) => {
         setMenu(response.data);
       })
       .catch((error) => {
         console.log("Error fetching menu data:", error);
       });
-  }
-  
-  const filterInventory = () => {
+  };
+
+  const filterInventory = useCallback(() => {
     const filtered = inventory.filter(item =>
       (selectedCategory === 'All' || item.category === selectedCategory) &&
       (item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -69,7 +67,7 @@ const ManageInventory = () => {
       item.description.toLowerCase().includes(searchQuery.toLowerCase()))
     );
     setFilteredInventory(filtered);
-  };
+  }, [inventory, searchQuery, selectedCategory]);
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
@@ -120,7 +118,7 @@ const ManageInventory = () => {
 
   const confirmDelete = (inventory) => {
     axios
-      .delete(`${url}inventory/deleteitem`, { data: { name: inventory.name } })
+      .delete(`${url}/inventory/deleteitem`, { data: { name: inventory.name } })
       .then((response) => {
         fetchData();
         console.log(inventory);
@@ -132,23 +130,6 @@ const ManageInventory = () => {
       });
   };
 
-  const handleAddItem = async (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    try {
-      const response = await axios.post("http://localhost:3001/inventory/additems", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      console.log("Item added:", response.data);
-      fetchData();
-      settoggler((prevState) => ({ ...prevState, addItem: false }));
-    } catch (error) {
-      console.error("Error adding item:", error);
-    }
-  };
-
   const handleAddToMenu = async (item) => {
     try {
       const response = await axios.post("http://localhost:3001/menu/additems", item);
@@ -157,6 +138,25 @@ const ManageInventory = () => {
       toast("Item added to menu successfully");
     } catch (error) {
       console.error("Error adding item to menu:", error);
+    }
+  };
+
+  const handleAddItem = async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    try {
+      const response = await axios.post(`${url}/inventory/additems`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      console.log("Item added:", response.data);
+      fetchData();
+      settoggler((prevState) => ({ ...prevState, addItem: false }));
+      toast.success("Item added successfully");
+    } catch (error) {
+      console.error("Error adding item:", error);
+      toast.error("Error adding item");
     }
   };
 
@@ -212,11 +212,9 @@ const ManageInventory = () => {
           isOpen={toggler.addItem}
           onClose={() => settoggler((prevState) => ({ ...prevState, addItem: false }))}
           title={"Add a New Inventory Item"}
-          btnTitle={"Add Item"}
-          type="submit"
         >
           <form onSubmit={handleAddItem}>
-            <div className="flex flex-col items-start gap-y-3">
+            <div className="flex items-center justify-between gap-y-1 w-full">
               <label htmlFor="name" className="text-sm font-medium cursor-pointer">
                 Add Name
               </label>
@@ -224,11 +222,11 @@ const ManageInventory = () => {
                 id="name"
                 name="name"
                 type="text"
-                className="w-full p-4 bg-transparent border border-gray-200 rounded-lg outline-none"
+                className="p-4 bg-transparent border border-gray-200 rounded-lg outline-none"
                 placeholder="Enter your name"
               />
             </div>
-            <div className="flex flex-col items-start gap-y-3">
+            <div className="flex items-center justify-between gap-y-1 w-full">
               <label htmlFor="category" className="text-sm font-medium cursor-pointer">
                 Add Category
               </label>
@@ -241,17 +239,19 @@ const ManageInventory = () => {
                   ))}
                 </select>
                 <button
+                  type="button"
                   className="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700"
                   onClick={() =>
                     settoggler((prevState) => ({
                       ...prevState,
-                      categoryToggler: !prevState.categoryToggler,
+                      categoryToggler: true,
                     }))
                   }
                 >
                   +
                 </button>
               </div>
+            </div>
               {toggler.categoryToggler ? (
                 <input
                   id="newCategory"
@@ -261,8 +261,7 @@ const ManageInventory = () => {
                   placeholder="Enter new category"
                 />
               ) : null}
-            </div>
-            <div className="flex flex-col items-start gap-y-3">
+            <div className="flex items-center justify-between gap-y-1 w-full">
               <label htmlFor="price" className="text-sm font-medium cursor-pointer">
                 Add Price
               </label>
@@ -270,7 +269,7 @@ const ManageInventory = () => {
                 id="price"
                 name="price"
                 type="text"
-                className="w-full p-4 bg-transparent border border-gray-200 rounded-lg outline-none"
+                className=" p-4 bg-transparent border border-gray-200 rounded-lg outline-none"
                 placeholder="Enter price"
               />
             </div>
@@ -285,6 +284,9 @@ const ManageInventory = () => {
                 Add Description (optional)
               </label>
               <textarea name="description" id="description" cols={50}></textarea>
+              <button type="submit" className="w-full mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700">
+            Add
+          </button>
             </div>
           </form>
         </Modal>
@@ -325,6 +327,7 @@ const ManageInventory = () => {
                 ))}
               </select>
               <button
+                type="button"
                 className="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700"
                 onClick={() =>
                   settoggler((prevState) => ({
