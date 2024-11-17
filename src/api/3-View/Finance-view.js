@@ -2,6 +2,7 @@ const { DisplayFinances, AddFinance, EditFinance, DeleteFinance } = require('../
 const express = require('express');
 
 module.exports = function FinanceView(app) {
+    console.log("finance view is working")
     // Middleware to parse JSON
     app.use(express.json()); // Use express.json() to parse incoming JSON
 
