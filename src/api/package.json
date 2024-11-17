@@ -3,9 +3,12 @@
   "version": "1.0.0",
   "description": "this is the backend api for OrderSync ",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+"scripts": {
+  "test": "echo \"Error: no test specified\" && exit 1",
+  "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
+  "start:backend": "cd src/api && nodemon index.js",
+  "start:frontend": "cd src/frontend && npm run dev"
+},
   "author": "",
   "license": "ISC",
   "dependencies": {
@@ -24,3 +27,5 @@
   },
   "keywords": []
 }
+
+
