@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
-import { Search, ChevronDown, ChevronUp, Edit, Trash, RefreshCw,Printer } from 'lucide-react';
+import { Search, ChevronDown, ChevronUp, Edit, Trash, RefreshCw,Printer,LogOut } from 'lucide-react';
 import Layout from '../Admin/Layout';
 import Modal from '../../components/Modle';
 import { toast } from 'react-toastify';
@@ -56,7 +56,7 @@ const OrderDetails = () => {
       } catch (error) {
         console.error('Error fetching orders:', error);
       }
-    }, 5000); // Poll every 5 seconds
+    }, 500); // Poll every 5 seconds
 
     return () => clearInterval(interval);
   }, [orders.length, fetchData]);
@@ -171,7 +171,7 @@ let [PrintData,setprintdata]=useState();
   }
 
 
-  const StatusUpdate = async (order) => {
+  const fulfillorder = async (order) => {
     const id = order._id;
     try {
       await axios.put(`${API_URL}/status`, {
@@ -180,6 +180,21 @@ let [PrintData,setprintdata]=useState();
         payment_status: 'Fulfilled',
       });
       toast.success('Order has been marked as completed');
+      fetchData();
+    } catch (err) {
+      console.error(err);
+      toast.error('Error updating order status');
+    }
+  };
+  const cancleorder = async (order) => {
+    const id = order._id;
+    try {
+      await axios.put(`${API_URL}/status`, {
+        _id: id,
+        delivery_status: 'Cancelled',
+        payment_status: 'Cancelled',
+      });
+      toast.success('Order has been marked as Cancelled');
       fetchData();
     } catch (err) {
       console.error(err);
@@ -221,18 +236,48 @@ let [PrintData,setprintdata]=useState();
       amount: bill
     });
   }
-  const HandleOrderCompletion = async (order) => {
-    try {
-      HandleAccounts(order)
-      await StatusUpdate(order);
-      await StockDeduction(order);
-      await OrderCountHandler(order);
-      toast.success('Order completed successfully');
-    } catch (err) {
-      console.error(err);
-      toast.error('Error completing order');
-    }
+
+  const [finances,setFinances]=useState([]);
+
+const finance_API_URL = 'http://localhost:3001/finances';
+
+const handleAddFinance = async (order) => {
+  const totalCredit = finances
+    .filter((finance) => finance.type === 'credit')
+    .reduce((acc, finance) => acc + finance.amount, 0);
+  const totalDebit = finances
+    .filter((finance) => finance.type === 'debit')
+    .reduce((acc, finance) => acc + finance.amount, 0);
+
+  const totalRevenue = totalCredit - totalDebit;
+  const newFinances = {
+    type: 'credit',
+    amount: order.bill,
+    purpose: `Order ${order.orderid} completed`,
+    revenue: totalRevenue + order.bill
   };
+  try {
+    await axios.post(`${finance_API_URL}/add`, newFinances);
+    toast.success('Finance added successfully');
+    fetchData(); // Fetch updated finances
+  } catch (error) {
+    console.error('Error adding finance:', error);
+    toast.error('Error adding finance');
+  }
+};
+
+const HandleOrderCompletion = async (order) => {
+  try {
+    await handleAddFinance(order);
+    await fulfillorder(order);
+    await StockDeduction(order);
+    await OrderCountHandler(order);
+    toast.success('Order completed successfully');
+  } catch (err) {
+    console.error(err);
+    toast.error('Error completing order');
+  }
+};
 
   // Count the number of orders for each delivery status
   const statusCounts = orders.reduce((acc, order) => {
@@ -268,9 +313,21 @@ const counts = [fulfilledCount, canceledCount, pendingCount];
     return matchesDeliveryStatus && matchesPaymentStatus && matchesDateFilter;
   });
   const totalSales = filteredSalesOrders.reduce((acc, order) => acc + order.bill, 0);
-
+  const removeCookies=()=>{
+    // . = '/login';
+  }
   return (
     <Layout>
+       <div className="">
+        <h1 className="font-bold text-4xl">Dashboard</h1>
+        <button
+          onClick={removeCookies}
+          className="flex items-center space-x-2 px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+        >
+          <LogOut size={20} />
+          <span>Logout</span>
+        </button>
+      </div>
         <div className="bg-white shadow rounded-lg p-4 sm:p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold">Total Sales</h2>
@@ -474,19 +531,7 @@ const counts = [fulfilledCount, canceledCount, pendingCount];
                               Mark as complete
                             </button>
                             <button
-                              onClick={async (order) => { const id = order._id;
-                                try {
-                                  await axios.put(`${API_URL}/status`, {
-                                    _id: id,
-                                    delivery_status: 'Cancelled',
-                                    payment_status: 'Cancelled',
-                                  });
-                                  toast.success('Order has been marked as completed');
-                                  fetchData();
-                                } catch (err) {
-                                  console.error(err);
-                                  toast.error('Error updating order status');
-                                }}}
+                              onClick={()=>cancleorder(order)}
                               className="text-white bg-red-600 transition-all hover:bg-red-700 p-2 rounded-md"
                             >
                               Mark as canceled
