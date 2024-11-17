@@ -19,9 +19,9 @@ export default function LoginForm() {
   useEffect(() => {
     if (cookies.admin) {
       navigate('/admin');
-    } else if (cookies.employee) {
-      navigate('/employee');
     }
+    {cookies.employee&&cookies.employee.duty==="cashier"&&navigate('/employee')} 
+
   }, [cookies, navigate]);
 
   const togglePasswordVisibility = () => {
