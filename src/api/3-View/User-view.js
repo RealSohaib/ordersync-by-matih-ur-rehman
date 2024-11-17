@@ -1,8 +1,10 @@
+
 const express = require('express');
 const { Loginuser, DisplayUser,    ChangeCredentials,
     DeleteUser,CreateUser } = require('../2-Controler/user-controler');
 const cors=require("cors")
 module.exports = function UserView(app) {
+    console.log("user view is working")
     // Middleware to parse JSON
     app.use(express.json()); // Use express.json() to parse incoming JSON
 
