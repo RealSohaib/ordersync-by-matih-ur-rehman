@@ -1,7 +1,9 @@
+
 const express = require('express');
 const { DisplayOrderDetails, FindOrder, PlaceOrder, RemoveOrder, EditOrder, OrderStatusHandler, FeedBackHandler, StockHandler, OrderCountHandler } = require('../2-Controler/OrderDetails-controler.js');
 
 module.exports = function OrderView(app) {
+    console.log("orderview view is working")
     app.use(express.json()); // Use express.json() to parse incoming JSON
 
     // Route for displaying order details
