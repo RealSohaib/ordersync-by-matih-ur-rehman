@@ -1,6 +1,6 @@
 # OrderSync
 
-OrderSync is a full-stack application for managing orders, inventory, and accounts. It includes both a backend API and a frontend client, built with Node.js, Express, MongoDB, React, and Vite.
+OrderSync is a full-stack rfid based web application for managing orders, inventory, and accounts. It includes both a backend API and a frontend client, built with Node.js, Express, MongoDB, React, and Vite.
 
 ## Table of Contents
 
