@@ -17,7 +17,7 @@ const Layout = ({ children }) => {
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-gray-100">
       <Navbar
-      title="Employee panals">
+      title="Admin panals">
       {AdminNavbar.map((item, index) => (
             <Link
               key={index}
