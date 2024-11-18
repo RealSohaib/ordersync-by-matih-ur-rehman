@@ -15,7 +15,7 @@ const Layout = ({ children }) => {
   }, []);
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-gray-100">
+    <div className="flex flex-col md:flex-row min-h-screen">
       <Navbar
       title="Admin panals">
       {AdminNavbar.map((item, index) => (
