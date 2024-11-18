@@ -1,4 +1,5 @@
 const { UserModel } = require("../1-Modle/modle");
+
 const DisplayUser = async function (req, res) {
     try {
         const data = await UserModel.find();
@@ -55,40 +56,73 @@ async function Loginuser(req, res) {
 async function ChangeCredentials(req, res) {
     const { _id, newusername, password, newpassword, newduty, newsalary } = req.body;
     try {
-      // Find user with the provided _id
-      const user = await UserModel.findOne({ _id });
-  
-      if (user) {
-        // Compare provided current password with the one stored in the database
-        if (password === user.password) {
-          // Update username and password using findOneAndUpdate
-          const updatedUser = await UserModel.findOneAndUpdate(
-            { _id },
-            {
-              username: newusername,
-              password: newpassword,
-              duty: newduty,
-              salary: newsalary
-            },
-            { new: true } // Return the updated document
-          );
-  
-          if (updatedUser) {
-            res.status(200).send({ message: 'Credentials updated successfully' });
-          } else {
-            res.status(404).send({ message: 'User not found' });
-          }
+        // Find user with the provided _id
+        const user = await UserModel.findOne({ _id });
+
+        if (user) {
+            // Compare provided current password with the one stored in the database
+            if (password === user.password) {
+                // Update username and password using findOneAndUpdate
+                const updatedUser = await UserModel.findOneAndUpdate(
+                    { _id },
+                    {
+                        username: newusername,
+                        password: newpassword,
+                        duty: newduty,
+                        salary: newsalary
+                    },
+                    { new: true } // Return the updated document
+                );
+
+                if (updatedUser) {
+                    res.status(200).send({ message: 'Credentials updated successfully' });
+                } else {
+                    res.status(404).send({ message: 'User not found' });
+                }
+            } else {
+                res.status(401).send({ message: 'Invalid current password' }); // If current password doesn't match
+            }
         } else {
-          res.status(401).send({ message: 'Invalid current password' }); // If current password doesn't match
+            res.status(404).send({ message: 'User not found' });
         }
-      } else {
-        res.status(404).send({ message: 'User not found' });
-      }
     } catch (err) {
-      console.error(err);
-      res.status(500).send({ message: 'Internal Server Error' });
+        console.error(err);
+        res.status(500).send({ message: 'Internal Server Error' });
     }
-  }
+}
+
+async function ChangePassword(req, res) {
+    const { _id, password, newpassword } = req.body;
+    try {
+        // Find user with the provided _id
+        const user = await UserModel.findOne({ _id });
+
+        if (user) {
+            // Compare provided current password with the one stored in the database
+            if (password === user.password) {
+                // Update password using findOneAndUpdate
+                const updatedUser = await UserModel.findOneAndUpdate(
+                    { _id },
+                    { password: newpassword },
+                    { new: true } // Return the updated document
+                );
+
+                if (updatedUser) {
+                    res.status(200).send({ message: 'Password updated successfully' });
+                } else {
+                    res.status(404).send({ message: 'User not found' });
+                }
+            } else {
+                res.status(401).send({ message: 'Invalid current password' }); // If current password doesn't match
+            }
+        } else {
+            res.status(404).send({ message: 'User not found' });
+        }
+    } catch (err) {
+        console.error(err);
+        res.status(500).send({ message: 'Internal Server Error' });
+    }
+}
 
 async function DeleteUser(req, res) {
     const { username } = req.body;
@@ -107,10 +141,11 @@ async function DeleteUser(req, res) {
     }
 }
 
-module.exports= {
+module.exports = {
     ChangeCredentials,
     CreateUser,
     Loginuser,
     DeleteUser,
-    DisplayUser
+    DisplayUser,
+    ChangePassword
 };
