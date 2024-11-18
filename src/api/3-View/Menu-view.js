@@ -13,7 +13,7 @@ module.exports = function MenuView(app) {
         },
         filename: function (req, file, cb) {
             const uniqueSuffix = Date.now();
-            const fileName = `${file.originalname}${uniqueSuffix}`;
+            const fileName = `menuitem${file.originalname}${uniqueSuffix}`;
             cb(null, fileName); // Specify the file name
         }
     });
