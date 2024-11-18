@@ -79,9 +79,27 @@ const Home = () => {
     navigate("/login");
   };
 
-  const ConfirmEdit = () => {
-    axios
-      .put(`http://localhost:3001/menu/edititem`, edit)
+  const ConfirmEdit = (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const stock = formData.get("stock");
+    const price = formData.get("price");
+  
+    if (stock < 0 || price < 0) {
+      toast.error("Stock and price cannot be negative");
+      return;
+    }
+  
+    const updatedItem = {
+      ...edit,
+      name: formData.get("name"),
+      category: formData.get("category"),
+      stock: parseInt(stock, 10),
+      price: parseFloat(price),
+      description: formData.get("description"),
+    };
+  
+    axios.put(`http://localhost:3001/menu/edititem`, updatedItem)
       .then(() => {
         settoggler((prevState) => ({ ...prevState, editItem: false }));
         fetchData();
@@ -89,6 +107,7 @@ const Home = () => {
       })
       .catch((err) => {
         console.log(err);
+        toast.error("Error editing item");
       });
   };
 
@@ -98,8 +117,7 @@ const Home = () => {
   };
 
   const confirmDelete = () => {
-    axios
-      .delete(`${url}menu/deleteitem`, { data: { name: NewMenu.name } })
+    axios.delete(`${url}menu/deleteitem`, { data: { name: NewMenu.name } })
       .then((response) => {
         fetchData();
         settoggler((prevState) => ({ ...prevState, deleteItem: false }));
@@ -113,7 +131,15 @@ const Home = () => {
   const handleAddItem = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
-    try {
+    const stock = formData.get("stock");
+    const price = formData.get("price");
+
+    if (stock < 0 || price < 0) {
+      toast.error("Stock and price cannot be negative");
+      return;
+    }
+    else
+    {try {
       await axios.post("http://localhost:3001/menu/additems", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
@@ -124,7 +150,7 @@ const Home = () => {
       toast.success("Item added successfully");
     } catch (error) {
       console.error("Error adding item:", error);
-    }
+    }}
   };
 
   const categories = [ ...new Set(menu.map((item) => item.category))];
@@ -313,121 +339,109 @@ const Home = () => {
             </button>
           </form>
         </Modal>
-
-        {/* Edit Modal */}
-        <Modal
-          isOpen={toggler.editItem}
-          onClose={() => settoggler((prevState) => ({ ...prevState, editItem: false }))}
-          title={"Edit Menu Item"}
-          onClick={ConfirmEdit}
-          btnTitle={"Save Changes"}
-        >
-          <div className="flex flex-col items-start gap-y-3">
-            <label htmlFor="editName" className="text-sm font-medium cursor-pointer">
-              Edit Name
-            </label>
+                {/* Edit Modal */}
+    <Modal
+      isOpen={toggler.editItem}
+      onClose={() => settoggler((prevState) => ({ ...prevState, editItem: false, categoryToggler: false }))}
+      title={"Edit Menu Item"}
+      btnTitle={"Save Changes"}
+    >
+      <form onSubmit={ConfirmEdit}>
+        <div className="flex items-start gap-y-3">
+          <label htmlFor="editName" className="text-sm font-medium cursor-pointer">
+            Edit Name
+          </label>
+          <input
+            id="editName"
+            name="name"
+            type="text"
+            defaultValue={edit.name}
+            className=" p-4 bg-transparent border border-gray-200 rounded-lg outline-none"
+            placeholder="Enter name"
+          />
+        </div>
+        <div className="flex  items-start gap-y-3">
+          <label htmlFor="category" className="text-sm font-medium cursor-pointer">
+            Add Category
+          </label>
+          <select name="category" className="p-4 bg-transparent border border-gray-200 rounded-lg outline-none">
+            {categories.map((category, index) => (
+              <option key={index} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            className="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700"
+            onClick={() =>
+              settoggler((prevState) => ({
+                ...prevState,
+                categoryToggler: !prevState.categoryToggler,
+              }))
+            }
+          >
+            + 
+          </button>
+          {toggler.categoryToggler && (
             <input
-              id="editName"
+              id="newCategory"
+              name="newCategory"
               type="text"
-              value={edit.name}
-              onChange={(e) => setedit({ ...edit, name: e.target.value })}
-              className="w-full p-4 bg-transparent border border-gray-200 rounded-lg outline-none"
-              placeholder="Enter name"
-            />
-          </div>
-          <div className="flex flex-col items-start gap-y-3">
-            <label htmlFor="editCategory" className="text-sm font-medium cursor-pointer">
-              Edit Category
-            </label>
-            <div className="flex items-center w-full justify-between">
-              <div className="flex items-center text-center" >
-              <select
-                onChange={(e) => setedit({ ...edit, category: e.target.value })}
-              >
-                {categories.map((category, index) => (
-                  <option key={index} value={category}>
-                    {category}
-                  </option>
-                ))}
-              </select>
-              <button
-                className="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700"
-                onClick={() =>
-                  settoggler((prevState) => ({
-                    ...prevState,
-                    categoryToggler: !prevState.categoryToggler,
-                  }))
-                }
-                >
-                +
-              </button>
-                </div>
-            {toggler.categoryToggler ? (
-              <input
-              id="newEditCategory"
-              type="text"
-              value={edit.category}
-              onChange={(e) => setedit({ ...edit, category: e.target.value })}
-              className="w-full p-4 bg-transparent border border-gray-200 rounded-lg outline-none"
+              className="w-full focus:shadow-lg focus:border-2 focus:border-blue-400 p-4 bg-transparent border border-gray-200 rounded-lg outline-none"
               placeholder="Enter new category"
-              />
-            ) : null}
-            </div>
-          </div>
-          <div className="flex w-full justify-between items-center  text-center">
-            
-          <div className="flex flex-col items-start gap-y-3">
-            <label htmlFor="editStock" className="text-sm font-medium cursor-pointer">
-              Edit Available Stock
-            </label>
-            <input
-              id="editStock"
-              type="number"
-              value={edit.stock}
-              onChange={(e) => setedit(  validateNumber(e.target.value),{ ...edit, stock: e.target.value })}
-              className="w-full p-4 bg-transparent border border-gray-200 rounded-lg outline-none"
-              placeholder="Enter stock"
-              />
-              </div>
-          </div>
-          <div className="flex flex-col items-start gap-y-3">
-         <div className="flex w-full justify-between items-center  text-center">
-            <label htmlFor="editPrice" className="text-sm font-medium cursor-pointer">
-              Edit Price
-            </label>
-            <input
-              id="editPrice"
-              type="number"
-              value={edit.price}
-              onChange={(e) => setedit({ ...edit, price: e.target.value })}
-              className="p-4 bg-transparent border border-gray-200 rounded-lg outline-none"
-              placeholder="Enter price"
-              />
-              </div>
-          </div>
-          <div className="flex flex-col items-start gap-y-3">
-            <label htmlFor="editImage" className="text-sm font-medium cursor-pointer">
-              Edit Image
-            </label>
-            <input type="file" name="image" id="editImage" />
-          </div>
-          <div className="flex flex-col items-start gap-y-3">
-            <label htmlFor="editDescription" className="text-sm font-medium cursor-pointer">
-              Edit Description (optional)
-            </label>
-            <textarea
-              name="description"
-              id="editDescription"
-              value={edit.description}
-              onChange={(e) => setedit({ ...edit, description: e.target.value })}
-              cols={50}
-            ></textarea>
-            <button className="w-full mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700"
-                    onClick={ConfirmEdit}>
-                      Edit 
-            </button>
-          </div>
-        </Modal>
+            />
+          )}
+        </div>
+        <div className="flex  items-center gap-y-3">
+          <label htmlFor="editStock" className="text-sm font-medium cursor-pointer">
+            Edit Available Stock
+          </label>
+          <input
+            id="editStock"
+            name="stock"
+            type="number"
+            defaultValue={edit.stock}
+            className="p-4 bg-transparent border border-gray-200 rounded-lg outline-none"
+            placeholder="Enter stock"
+          />
+        </div>
+        <div className="flex  items-center gap-y-3">
+          <label htmlFor="editPrice" className="text-sm font-medium cursor-pointer">
+            Edit Price
+          </label>
+          <input
+            id="editPrice"
+            name="price"
+            type="number"
+            defaultValue={edit.price}
+            className="p-4 bg-transparent border border-gray-200 rounded-lg outline-none"
+            placeholder="Enter price"
+          />
+        </div>
+        <div className="flex flex-col items-start gap-y-3">
+          <label htmlFor="editImage" className="text-sm font-medium cursor-pointer">
+            Edit Image
+          </label>
+          <input type="file" name="image" id="editImage" />
+        </div>
+        <div className="flex flex-col items-start gap-y-3">
+          <label htmlFor="editDescription" className="text-sm font-medium cursor-pointer">
+            Edit Description (optional)
+          </label>
+          <textarea
+            name="description"
+            id="editDescription"
+            defaultValue={edit.description}
+            className="w-full p-4 bg-transparent border border-gray-200 rounded-lg outline-none"
+            cols={50}
+          ></textarea>
+        </div>
+        <button type="submit" className="w-full mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700">
+          Save Changes
+        </button>
+      </form>
+    </Modal>
 
         {/* Delete Modal */}
         <Modal
