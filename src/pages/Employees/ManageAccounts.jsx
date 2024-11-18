@@ -249,12 +249,12 @@ const ManageAccounts = () => {
                         >
                           <Edit />
                         </button>
-                        <button
+                        {/* <button
                           className="text-red-500 hover:text-red-700"
                           onClick={() => handleDeleteFinance(finance)}
                         >
                           <Trash />
-                        </button>
+                        </button> */}
                         <button
                           className="text-green-500 hover:text-green-700 ml-2"
                           onClick={() => {
