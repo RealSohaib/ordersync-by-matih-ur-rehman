@@ -1,7 +1,9 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import { Search, ChevronDown, ChevronUp, Edit, Trash, RefreshCw,Printer,LogOut } from 'lucide-react';
 import Layout from '../Admin/Layout';
+import { Cookies } from 'react-cookie';
+import { useNavigate } from 'react-router-dom';
 import Modal from '../../components/Modle';
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
@@ -313,8 +315,11 @@ const counts = [fulfilledCount, canceledCount, pendingCount];
     return matchesDeliveryStatus && matchesPaymentStatus && matchesDateFilter;
   });
   const totalSales = filteredSalesOrders.reduce((acc, order) => acc + order.bill, 0);
+  const cookies = useMemo(() => new Cookies(), []);
+  const navigate = useNavigate();
   const removeCookies=()=>{
-    // . = '/login';
+    cookies.remove('employee');
+    navigate('/login');
   }
   return (
     <Layout>
