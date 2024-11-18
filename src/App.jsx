@@ -9,6 +9,7 @@ import Resciept from './pages/Client/Resciept';
 import Login from './components/Login';
 import Manageemployees from './pages/Admin/ManageEmployees';
 import ManageProfile from './pages/Admin/ManageProfile';
+import EmployeesManageProfile from './pages/Employees/ManageProfile.jsx';
 import OrderDetials from './pages/Admin/ManageOrders.jsx';
 import Accounts from './pages/Admin/ManageAccounts.jsx';
 // import OrderDetials from './pages/Admin';
@@ -45,7 +46,7 @@ const App = () => {
             <Route path="/orders" element={<MangeOrder />} />
             <Route path="/accounts" element={<EmpployeesAccounts />} />
             <Route path="/inventory" element={<MangeInventoryemployee />} />
-
+            <Route path="/profile" element={<EmployeesManageProfile />} />
             </>
           ) : (
             <Route path="/login" element={<Login />} />
