@@ -185,7 +185,7 @@ export default function Index() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen">
       <Layout>
 
       <header className="bg-white shadow-md">
