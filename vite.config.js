@@ -8,4 +8,13 @@ export default defineConfig({
       'whatsapp': '/src/components/whatsapp.jsx', // Adjust the path as needed
     },
   },
+  server: {
+    host: '0.0.0.0', // Listen on all network interfaces
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3001', // Node.js backend
+        changeOrigin: true,
+      }
+    }
+  }
 });
