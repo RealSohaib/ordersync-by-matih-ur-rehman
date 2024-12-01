@@ -1,3 +1,3 @@
 ##important##
 
-in resciept file TIMER IS NOT WORKING LIKE ITS SUPPOSE TO 
+TIMER IS NOT WORKING LIKE ITS SUPPOSE TO  in resciept.jsx file TIMER 
